@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estudio de video 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<header>
+  <h1>Estudio de video 3D</h1>
+  <div class="top">
+    <span id="chip"></span>
+    <button class="ghost" id="open" aria-controls="menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      Configuración
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="stage" id="stage">
+    <canvas id="gl"></canvas>
+    <video id="vid" controls loop playsinline></video>
+    <button class="ghost" id="lvstop" hidden style="position:absolute;right:12px;bottom:14px;z-index:3">Terminar</button>
+    <div id="st" aria-live="polite">Describe una escena y pulsa «Generar video».</div>
+    <div class="pbar" id="pbar"><i id="pg"></i></div>
+  </section>
+  <div class="compose">
+    <textarea id="prompt" aria-label="Idea del video" placeholder="Un robot de cerámica camina por una playa al amanecer"></textarea>
+    <div class="btns"><button class="go" id="go">Generar video</button><button class="go auto" id="auto" title="La IA elige todo el terror: criatura, luz, cámara, sonido, imagen, sangre y duración; tú solo das la idea">✨ Automático</button></div>
+  </div>
+  <section id="rv" hidden aria-label="Guion de la película">
+    <h2>Guion de la película</h2>
+    <p class="hint" id="rvs"></p>
+    <p class="hint">Edita subtítulos, duraciones, cámaras y transiciones. La duración final se ajusta a la total de Configuración, salvo que cambies la de algún plano. Las transiciones solo cuentan si en Configuración están en «Automáticas».</p>
+    <label for="rvt">Título</label>
+    <input id="rvt" maxlength="80">
+    <div id="rvl"></div>
+    <p class="hint">Duración total de los planos: <b id="rvd"></b> s</p>
+    <details>
+      <summary>Avanzado: editar el JSON completo</summary>
+      <textarea id="rvj" spellcheck="false" aria-label="JSON del guion"></textarea>
+      <p class="hint">Si cambias el JSON, se usa en lugar del formulario.</p>
+    </details>
+    <p class="hint" id="rvm" role="alert"></p>
+    <div class="rvb"><button class="go" id="rvgo">Grabar película</button><button class="ghost" id="rvno">Descartar guion</button></div>
+  </section>
+  <div id="out" hidden><a id="dl">Descargar video</a></div>
+</main>
+
+<div id="shade" hidden></div>
+<aside id="menu" aria-label="Configuración">
+  <div class="hd"><h2>Configuración</h2><button class="ghost" id="close">Cerrar</button></div>
+
+  <label for="prov">Motor de video</label>
+  <select id="prov">
+    <option value="local">Motor 3D local (sin API, gratis)</option>
+    <optgroup label="IA de texto gratis: dirige la película 3D">
+      <option value="gemini">Google Gemini</option>
+      <option value="openrouter">OpenRouter (modelos gratis)</option>
+      <option value="groq">Groq</option>
+      <option value="mistral">Mistral</option>
+      <option value="oai">Otra IA (formato OpenAI)</option>
+    </optgroup>
+    <optgroup label="Video generado por API">
+      <option value="fal">fal.ai (créditos gratis al registrarte)</option>
+      <option value="hf">Hugging Face (token gratuito)</option>
+      <option value="custom">API de video personalizada</option>
+    </optgroup>
+  </select>
+
+  <div data-p="key">
+    <label for="key">Clave de API</label>
+    <input id="key" type="password" autocomplete="off" placeholder="Pega tu clave aquí">
+    <p class="hint" data-p="link"><a id="keyHelp" target="_blank" rel="noopener">Conseguir una clave gratis</a>. Se guarda solo en este navegador.</p>
+  </div>
+
+  <div data-p="key">
+    <label for="model" id="modelL">Modelo</label>
+    <input id="model" autocomplete="off">
+    <div data-p="list" class="row">
+      <button type="button" class="ghost" id="load">Cargar modelos</button>
+      <span class="hint" id="loadH" aria-live="polite"></span>
+    </div>
+    <div id="pick" hidden>
+      <input id="mq" type="search" placeholder="Buscar modelo" aria-label="Buscar modelo">
+      <label class="chk" data-p="openrouter"><input type="checkbox" id="mfree" checked> Mostrar solo modelos gratis</label>
+      <select id="mlist" size="7" aria-label="Modelos disponibles"></select>
+    </div>
+    <p class="hint" id="modelH"></p>
+    <div data-p="oai">
+      <label for="url">URL del endpoint (chat/completions)</label>
+      <input id="url" autocomplete="off" placeholder="https://api.ejemplo.com/v1/chat/completions">
+    </div>
+  </div>
+
+  <div data-p="custom">
+    <label for="auth">Cabecera de autorización</label>
+    <input id="auth" autocomplete="off">
+    <label for="body">Cuerpo de la petición (JSON)</label>
+    <textarea id="body" spellcheck="false"></textarea>
+    <p class="hint">Usa {prompt} y {key}. La respuesta puede ser un video o un JSON con un enlace .mp4 o .webm.</p>
+  </div>
+
+  <div data-p="video">
+    <label for="style">Estilo 3D añadido al texto</label>
+    <select id="style">
+      <option value="none">Ninguno</option>
+      <option value="cine">Render 3D cinematográfico</option>
+      <option value="toon">Dibujo animado 3D</option>
+      <option value="poly">Low-poly</option>
+      <option value="iso">Isométrico</option>
+    </select>
+  </div>
+
+  <div data-p="local">
+    <label for="shape">Forma</label>
+    <select id="shape">
+      <option value="auto">Según el texto</option>
+      <option value="box">Cubo</option>
+      <option value="sphere">Esfera</option>
+      <option value="knot">Nudo</option>
+      <option value="ico">Icosaedro</option>
+      <option value="torus">Toroide</option>
+      <optgroup label="Biblioteca de personajes y objetos">
+        <option value="robot">Robot</option>
+        <option value="person">Persona</option>
+        <option value="dog">Perro</option>
+        <option value="bird">Pájaro</option>
+        <option value="tree">Árbol</option>
+        <option value="pine">Pino</option>
+        <option value="flower">Flor</option>
+        <option value="rock">Roca</option>
+        <option value="cloud">Nube</option>
+        <option value="mountain">Montaña</option>
+        <option value="house">Casa</option>
+        <option value="car">Auto</option>
+        <option value="boat">Barco</option>
+        <option value="rocket">Cohete</option>
+        <option value="lamp">Farola</option>
+        <option value="ghost">Fantasma</option>
+        <option value="monster">Monstruo</option>
+        <option value="grave">Tumba</option>
+        <option value="deadtree">Árbol muerto</option>
+        <option value="mansion">Mansión encantada</option>
+        <option value="puddle">Charco de sangre</option>
+        <option value="trail">Rastro de sangre</option>
+        <option value="bed">Cama</option>
+      </optgroup>
+      <optgroup label="Formas de terror">
+        <option value="clown">Payaso siniestro</option>
+        <option value="doll">Muñeca poseída</option>
+        <option value="spider">Araña gigante</option>
+        <option value="skeleton">Esqueleto</option>
+        <option value="scarecrow">Espantapájaros</option>
+        <option value="slender">Hombre alto sin rostro</option>
+        <option value="zombie">Zombi</option>
+        <option value="tentacle">Tentáculos</option>
+        <option value="pentagram">Pentagrama de sangre</option>
+        <option value="coffin">Ataúd entreabierto</option>
+        <option value="pumpkin">Calabaza con luz</option>
+        <option value="candle">Vela</option>
+        <option value="bat">Murciélago</option>
+      </optgroup>
+    </select>
+    <label for="move">Movimiento</label>
+    <select id="move">
+      <option value="spin">Giro</option>
+      <option value="orbit">Cámara orbital</option>
+      <option value="bounce">Rebote</option>
+    </select>
+  </div>
+  <div data-p="render">
+    <label for="dur">Duración total (segundos)</label>
+    <input id="dur" type="number" min="3" max="60">
+    <p class="hint" data-p="local">Este motor renderiza en tu navegador con Three.js y graba el resultado. El texto define el color y, si lo dejas en automático, la forma. Elige un personaje de la biblioteca para verlo en acción sin usar ninguna API.</p>
+    <p class="hint" data-p="llm">La IA dirige una película con escenas, planos de cámara, luces, niebla, subtítulos y una biblioteca de personajes y objetos que se mueven. Tu navegador la renderiza con Three.js y la graba. Para varios planos usa 15 segundos o más.</p>
+  </div>
+  <div data-p="render">
+    <h3>Herramientas de cine</h3>
+    <p class="hint">Se aplican a cualquier película, la haga el motor local o una IA.</p>
+
+    <label for="music">1 · Banda sonora</label>
+    <select id="music">
+      <option value="auto">Automática (la IA elige)</option>
+      <option value="epic">Épica</option>
+      <option value="calm">Tranquila</option>
+      <option value="mystery">Misterio</option>
+      <option value="joy">Alegre</option>
+      <option value="tense">Tensión</option>
+      <option value="none">Sin música</option>
+    </select>
+    <label for="vol">Volumen de la música</label>
+    <input id="vol" type="range" min="0" max="100">
+
+    <label for="look">2 · Gradación de color</label>
+    <select id="look">
+      <option value="auto">Automática (la IA elige)</option>
+      <option value="natural">Natural</option>
+      <option value="warm">Cálido, atardecer</option>
+      <option value="cold">Frío, azul acero</option>
+      <option value="noir">Blanco y negro</option>
+      <option value="vintage">Vintage</option>
+      <option value="neon">Neón</option>
+      <option value="horror">Terror, verde enfermizo</option>
+      <option value="nightcam">Visión nocturna (cámara)</option>
+    </select>
+
+    <label for="bars">3 · Acabado de cine</label>
+    <select id="bars">
+      <option value="none">Sin barras negras</option>
+      <option value="2.39">Barras panorámicas 2.39:1</option>
+      <option value="1.85">Barras 1.85:1</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="vig"> Viñeta en los bordes</label>
+    <label class="chk"><input type="checkbox" id="grain"> Grano de película</label>
+    <label class="chk"><input type="checkbox" id="blur"> Desenfoque de movimiento</label>
+
+    <label for="fx">4 · Clima y atmósfera</label>
+    <select id="fx">
+      <option value="auto">Automático (la IA elige)</option>
+      <option value="none">Ninguno</option>
+      <option value="rain">Lluvia</option>
+      <option value="snow">Nieve</option>
+      <option value="fireflies">Luciérnagas</option>
+      <option value="dust">Polvo flotando en el aire</option>
+      <option value="embers">Brasas que suben</option>
+      <option value="mist">Niebla baja (terror)</option>
+    </select>
+
+    <label for="res">5 · Calidad de exportación</label>
+    <div class="two">
+      <select id="res" aria-label="Resolución"><option value="720">720p</option><option value="1080">1080p</option></select>
+      <select id="fps" aria-label="Cuadros por segundo"><option value="24">24 fps, cine</option><option value="30">30 fps</option><option value="60">60 fps</option></select>
+    </div>
+    <p class="hint">1080p y 60 fps piden más a tu equipo; si va lento, baja la calidad.</p>
+  </div>
+  <div data-p="llm">
+    <h3>Herramientas para la IA directora</h3>
+    <label for="genre">6 · Género y estilo de dirección</label>
+    <select id="genre">
+      <option value="none">Libre (la IA decide)</option>
+      <option value="adventure">Aventura épica</option>
+      <option value="scifi">Ciencia ficción</option>
+      <option value="horror">Terror</option>
+      <option value="comedy">Comedia</option>
+      <option value="kids">Cuento infantil</option>
+      <option value="drama">Drama</option>
+    </select>
+    <p class="hint">Le indica a la IA cómo iluminar, mover la cámara y llevar el ritmo. Si la música o el color están en automático, también se ajustan al género.</p>
+    <label for="htheme">Terror · tema</label>
+    <select id="htheme">
+      <option value="free">Libre (la IA elige)</option>
+      <option value="house">Casa embrujada</option>
+      <option value="forest">Bosque maldito</option>
+      <option value="cemetery">Cementerio de noche</option>
+      <option value="road">Carretera de noche</option>
+      <option value="lab">Laboratorio abandonado</option>
+    </select>
+    <label for="hend">Terror · final</label>
+    <select id="hend">
+      <option value="free">Libre (la IA elige)</option>
+      <option value="scare">Susto final</option>
+      <option value="ambig">Ambiguo, la sombra sigue ahí</option>
+      <option value="twist">Giro inesperado</option>
+      <option value="dark">Oscuro, la amenaza gana</option>
+    </select>
+    <p class="hint">Solo con el género «Terror». Para un corto con sentido usa 30 s o más y deja marcado «Guionista».</p>
+    <label for="edit">7 · Retoques</label>
+    <label class="chk"><input type="checkbox" id="edit" disabled> Modificar la película anterior</label>
+    <p class="hint">Se activa cuando la IA ya generó una película. Márcalo y escribe solo los cambios, por ejemplo «que sea de noche y llueva». La IA ajusta lo que ya hay en lugar de empezar de cero.</p>
+    <label for="review">14 · Guion editable</label>
+    <label class="chk"><input type="checkbox" id="review"> Revisar y editar el guion antes de grabar</label>
+    <p class="hint">Cuando la IA termina de escribir la película, te muestra el guion para que cambies subtítulos, duraciones y cámaras antes de grabar.</p>
+    <label for="story">15 · Guionista</label>
+    <label class="chk"><input type="checkbox" id="story"> Escribir primero la historia y luego dirigirla</label>
+    <p class="hint">La IA trabaja en dos pasos: primero una historia con inicio, conflicto y final; después la pone en escena con personajes que van a un destino, acciones sincronizadas con los planos y una cámara que los sigue. Usa dos llamadas a la IA.</p>
+  </div>
+  <div data-p="render">
+    <h3>Más herramientas de cine</h3>
+    <label for="tod">8 · Hora del día</label>
+    <select id="tod">
+      <option value="auto">Automática (según la escena)</option>
+      <option value="dawn">Amanecer</option>
+      <option value="noon">Mediodía</option>
+      <option value="sunset">Atardecer</option>
+      <option value="night">Noche</option>
+    </select>
+    <p class="hint">Cambia el cielo, el sol y la luz ambiente de todas las escenas.</p>
+
+    <label for="lens">9 · Lente y pulso de cámara</label>
+    <div class="two">
+      <select id="lens" aria-label="Lente">
+        <option value="auto">Lente: la IA elige</option>
+        <option value="wide">Gran angular</option>
+        <option value="normal">Normal</option>
+        <option value="tele">Teleobjetivo</option>
+      </select>
+      <select id="hand" aria-label="Pulso de cámara">
+        <option value="auto">Pulso: automático</option>
+        <option value="steady">Trípode estable</option>
+        <option value="handheld">Cámara en mano</option>
+      </select>
+    </div>
+
+    <label for="cred">10 · Créditos finales</label>
+    <label class="chk"><input type="checkbox" id="cred"> Añadir 6 s de créditos al final</label>
+    <input id="dir" autocomplete="off" placeholder="Nombre del director o directora" aria-label="Nombre del director" style="margin-top:10px">
+  </div>
+  <div data-p="render">
+    <h3>Sonido, montaje y subtítulos</h3>
+    <label for="amb">11 · Sonido ambiente</label>
+    <select id="amb">
+      <option value="auto">Automático (según el clima)</option>
+      <option value="none">Sin ambiente</option>
+      <option value="wind">Viento</option>
+      <option value="rain">Lluvia</option>
+      <option value="sea">Mar</option>
+      <option value="night">Noche con grillos</option>
+    </select>
+
+    <label for="trans">12 · Transiciones entre planos</label>
+    <select id="trans">
+      <option value="auto">Automáticas (la IA elige)</option>
+      <option value="cut">Corte directo</option>
+      <option value="fade">Fundido a negro</option>
+      <option value="white">Fundido a blanco</option>
+      <option value="wipe">Cortinilla</option>
+    </select>
+
+    <label for="subs">13 · Subtítulos</label>
+    <div class="two">
+      <select id="subs" aria-label="Estilo de subtítulos">
+        <option value="off">Sin subtítulos</option>
+        <option value="white">Blanco con borde</option>
+        <option value="yellow">Amarillo clásico</option>
+        <option value="box">Caja negra</option>
+      </select>
+      <select id="subsz" aria-label="Tamaño de subtítulos">
+        <option value="28">Pequeño</option>
+        <option value="38">Normal</option>
+        <option value="50">Grande</option>
+      </select>
+    </div>
+  </div>
+  <div data-p="render">
+    <h3>Herramientas de terror</h3>
+    <p class="hint">Se aplican a cualquier película, con o sin IA. Combínalas con el género «Terror» y la gradación «Terror».</p>
+    <label for="preset">Esencia de terror, con un clic</label>
+    <select id="preset">
+      <option value="gothic">Gótico clásico: mansión, niebla y fantasma</option>
+      <option value="slasher">Slasher: monstruo, lluvia y sangre</option>
+      <option value="found">Metraje encontrado: cámara en mano y linterna</option>
+      <option value="pov">Primera persona: explorando de noche con linterna</option>
+      <option value="off">Apagar todo el terror</option>
+    </select>
+    <button type="button" class="ghost" id="applyPreset" style="margin-top:10px">Aplicar esencia</button>
+    <p class="hint" id="presetH" aria-live="polite">Ajusta de una vez género, color, hora, clima, sonido y las herramientas de abajo. Después puedes retocar cada una.</p>
+    <label for="flick">16 · Luces que parpadean</label>
+    <select id="flick">
+      <option value="off">No</option>
+      <option value="soft">Suave, bombilla vieja</option>
+      <option value="hard">Fuerte, a punto de apagarse</option>
+    </select>
+    <label for="scare">17 · Susto (jump scare)</label>
+    <select id="scare">
+      <option value="off">Sin susto</option>
+      <option value="mid">A mitad de la película</option>
+      <option value="end">Al final</option>
+    </select>
+    <p class="hint">Destello rojo, sacudida de cámara y golpe de sonido.</p>
+    <label for="heart">18 · Sonido de miedo</label>
+    <label class="chk"><input type="checkbox" id="heart"> Latido que se acelera</label>
+    <label for="vhs">19 · Imagen dañada</label>
+    <label class="chk"><input type="checkbox" id="vhs"> Efecto VHS: líneas y tirones</label>
+    <label for="stalk">20 · Presencia que acecha</label>
+    <select id="stalk">
+      <option value="off">Ninguna</option>
+      <option value="clown">Payaso</option>
+      <option value="doll">Muñeca</option>
+      <option value="spider">Araña gigante</option>
+      <option value="skeleton">Esqueleto</option>
+      <option value="slender">Hombre alto sin rostro</option>
+      <option value="zombie">Zombi</option>
+      <option value="scarecrow">Espantapájaros</option>
+      <option value="ghost">Fantasma</option>
+      <option value="monster">Monstruo</option>
+    </select>
+    <p class="hint">Aparece al fondo de cada escena y se va acercando despacio. Para niebla baja usa «Clima y atmósfera».</p>
+    <label for="gore">21 · Sangre y charcos</label>
+    <select id="gore">
+      <option value="off">Ninguna</option>
+      <option value="some">Unos charcos y un rastro</option>
+      <option value="lots">Escena sangrienta</option>
+    </select>
+    <p class="hint">Reparte charcos y rastros de sangre por el suelo de cada escena. También puedes usar «Charco» y «Rastro» de la biblioteca.</p>
+    <label for="lensblood">22 · Sangre en la cámara</label>
+    <label class="chk"><input type="checkbox" id="lensblood"> Salpicaduras que gotean sobre la lente</label>
+    <p class="hint">Aparecen en el susto, o al 60 % de la película si no hay susto, con un golpe húmedo de sonido.</p>
+    <label for="steps">23 · Pasos</label>
+    <select id="steps">
+      <option value="off">Sin pasos</option>
+      <option value="slow">Lentos, alguien camina</option>
+      <option value="fast">Rápidos, alguien corre</option>
+      <option value="near">Se acercan poco a poco</option>
+    </select>
+    <label for="whisp">24 · Susurros</label>
+    <select id="whisp">
+      <option value="off">Sin susurros</option>
+      <option value="far">Lejanos, casi inaudibles</option>
+      <option value="close">Muy cerca del oído</option>
+    </select>
+    <p class="hint">Suenan por los altavoces izquierdo y derecho, así que mejor con auriculares. Se graban dentro del video.</p>
+    <label for="torch">25 · Linterna</label>
+    <div class="two">
+      <select id="torch" aria-label="Modo de la linterna">
+        <option value="off">Sin linterna</option>
+        <option value="fixed">Fija al centro</option>
+        <option value="sweep">Barre la escena</option>
+        <option value="shaky">Tiembla y falla</option>
+      </select>
+      <select id="tsize" aria-label="Tamaño del haz">
+        <option value="narrow">Haz estrecho</option>
+        <option value="normal">Haz normal</option>
+        <option value="wide">Haz ancho</option>
+      </select>
+    </div>
+    <p class="hint">Todo queda a oscuras salvo un círculo de luz cálida. «Tiembla y falla» se apaga a ratos, como una pila gastada.</p>
+    <h3>Corto: la cámara del dormitorio</h3>
+    <p class="hint">Para el corto de la persona que se graba durmiendo y a las 3:33 se levanta y mira a la cámara. Con el botón se prepara todo de una vez.</p>
+    <button type="button" class="go" id="prep333" style="padding:12px 18px;margin-top:10px;width:100%">Preparar el corto 3:33</button>
+    <label for="tpl">26 · Plantilla de película</label>
+    <select id="tpl">
+      <option value="off">Ninguna (usar mi idea)</option>
+      <option value="bedroom">La persona que se levanta a las 3:33</option>
+    </select>
+    <p class="hint">El estudio arma solo el dormitorio, la cama, la cámara fija y a la persona, sin usar la IA. Con la plantilla el texto de la idea se ignora.</p>
+    <label for="cam">27 · Cámara de seguridad</label>
+    <div class="two">
+      <select id="cam" aria-label="Modo de la cámara">
+        <option value="off">Sin pantalla de cámara</option>
+        <option value="live">REC, fecha y hora</option>
+        <option value="lapse">Avance rápido hasta las 3:33</option>
+      </select>
+      <select id="nights" aria-label="Noches grabadas">
+        <option value="1">1 noche</option>
+        <option value="3">3 noches</option>
+        <option value="7">7 noches</option>
+      </select>
+    </div>
+    <p class="hint">El reloj corre muy rápido cada noche hasta las 3:33 y, cuando ella aparece, la velocidad baja a x1.</p>
+    <label for="frz">28 · Congelar el final</label>
+    <div class="two">
+      <select id="frz" aria-label="Congelar">
+        <option value="off">No congelar</option>
+        <option value="1">Último segundo</option>
+        <option value="3">Últimos 3 s</option>
+      </select>
+      <select id="fzs" aria-label="Sonido al congelar">
+        <option value="tone">Pitido continuo</option>
+        <option value="mute">Silencio total</option>
+      </select>
+    </div>
+    <p class="hint">La imagen se queda totalmente quieta, sin reloj ni REC en movimiento. Sin créditos.</p>
+    <h3>Más herramientas de terror</h3>
+    <label for="eyes">29 · Ojos en la oscuridad</label>
+    <select id="eyes">
+      <option value="off">Sin ojos</option>
+      <option value="few">Unos pocos pares</option>
+      <option value="lots">Muchos, te rodean</option>
+    </select>
+    <p class="hint">Pares de ojos brillantes al fondo de cada escena, entre la niebla.</p>
+    <label for="creak">30 · Sonidos de la casa</label>
+    <select id="creak">
+      <option value="off">Sin crujidos</option>
+      <option value="rare">Crujidos de madera ocasionales</option>
+      <option value="often">Crujidos frecuentes</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="breath"> Respiración cerca</label>
+    <label class="chk"><input type="checkbox" id="tick"> Tic-tac de reloj</label>
+    <label for="thick">31 · Niebla que se espesa</label>
+    <label class="chk"><input type="checkbox" id="thick"> La niebla se cierra poco a poco durante la película</label>
+    <label for="zoom">32 · Cámara incómoda</label>
+    <div class="two">
+      <select id="zoom" aria-label="Zoom lento">
+        <option value="off">Sin zoom</option>
+        <option value="in">Se acerca poco a poco</option>
+        <option value="out">Se aleja poco a poco</option>
+      </select>
+      <select id="tilt" aria-label="Inclinación">
+        <option value="off">Cámara recta</option>
+        <option value="soft">Inclinada leve</option>
+        <option value="hard">Inclinada fuerte</option>
+        <option value="grow">Se va torciendo</option>
+      </select>
+    </div>
+    <label for="wake">33 · Hora del suceso (cámara de seguridad)</label>
+    <select id="wake">
+      <option value="03:33">3:33 AM</option>
+      <option value="02:22">2:22 AM</option>
+      <option value="04:44">4:44 AM</option>
+      <option value="03:00">3:00 AM</option>
+      <option value="00:00">Medianoche</option>
+    </select>
+  </div>
+  <div data-p="render">
+    <h3>Primera persona</h3>
+    <p class="hint">La cámara pasa a ser los ojos del protagonista (el «hero» si usas IA). Si no hay personaje, camina sola por la escena. Ideal con linterna, respiración y pasos. Con «Caminar yo» manejas tú: WASD o flechas, ratón (clic para capturarlo) y Mayús para correr; en el móvil, arrastra con el pulgar izquierdo para moverte (más lejos, corres) y con el derecho para mirar. Hay una cuenta de 3 s y grabas hasta que acabe la duración o pulses «Terminar».</p>
+    <label for="pov">34 · Cámara en primera persona</label>
+    <select id="pov"><option value="off">Desactivada</option><option value="on">Ver por los ojos del protagonista</option><option value="live">Caminar yo: teclado, ratón o dedos (grabo en vivo)</option></select>
+    <div class="two" style="margin-top:10px">
+      <select id="povlook" aria-label="Mirada"><option value="calm">Mirada tranquila</option><option value="glance">Mira atrás, asustado</option><option value="frantic">Mirada frenética</option></select>
+      <select id="povbob" aria-label="Forma de moverse"><option value="walk">Camina</option><option value="sneak">Sigiloso</option><option value="run">Corre</option></select>
+    </div>
+    <label class="chk"><input type="checkbox" id="povhands"> Mostrar mano y linterna en pantalla</label>
+    <h3>Terror avanzado</h3>
+    <label for="hush">35 · Suspenso sonoro</label>
+    <label class="chk"><input type="checkbox" id="hush"> Silencio justo antes del susto</label>
+    <label class="chk"><input type="checkbox" id="riser"> Zumbido que sube hasta el susto</label>
+    <p class="hint">Necesitan un susto en el punto 17. Primero tensión y silencio, luego el golpe.</p>
+    <label for="blackout">36 · Apagón</label>
+    <select id="blackout"><option value="off">Sin apagón</option><option value="mid">Una vez</option><option value="twice">Dos veces</option></select>
+    <p class="hint">Todas las luces se cortan con un golpe sordo y vuelven.</p>
+    <label for="hbvig">37 · Cuerpo y mente</label>
+    <label class="chk"><input type="checkbox" id="hbvig"> La pantalla late en rojo con el corazón</label>
+    <label class="chk"><input type="checkbox" id="sanity"> Cordura: la imagen se rompe poco a poco</label>
+    <label for="rtitle">38 · Título</label>
+    <label class="chk"><input type="checkbox" id="rtitle"> Título en rojo sangre</label>
+  </div>
+  <div data-p="render">
+    <h3>Cámaras y producción de terror</h3>
+    <label for="cmode">41 · Cámara de terror</label>
+    <select id="cmode"><option value="off">Normal (la que dirija la IA)</option><option value="ceiling">Esquina del techo, vigilando</option><option value="floor">A ras del suelo, reptando</option><option value="top">Cenital, bajando desde arriba</option><option value="kubrick">Travelling hacia el fondo</option><option value="shoulder">Sobre el hombro del protagonista</option></select>
+    <p class="hint">No se usa con la primera persona (punto 34). «Sobre el hombro» pide un personaje que camine, como el «hero» de la IA.</p>
+    <label for="view">42 · Tipo de cámara (imagen)</label>
+    <select id="view"><option value="off">Normal</option><option value="cam">Videocámara con visor: REC y batería</option><option value="webcam">Webcam pixelada</option><option value="peep">Mirilla de puerta</option><option value="silent">Cine mudo antiguo</option><option value="thermal">Cámara térmica</option></select>
+    <label for="stat">43 · Fallos de señal</label>
+    <select id="stat"><option value="off">Sin interferencias</option><option value="some">Dos ráfagas de estática</option><option value="many">Muchas ráfagas</option></select>
+    <label class="chk"><input type="checkbox" id="subl"> Fotogramas subliminales (negativo)</label>
+    <label for="card">44 · Tarjetas de texto</label>
+    <select id="card"><option value="off">Sin tarjeta de inicio</option><option value="found">Cinta encontrada n.º 7</option><option value="warn">Advertencia, imágenes perturbadoras</option><option value="real">Basado en hechos reales</option></select>
+    <label class="chk"><input type="checkbox" id="endc"> Cierre: «Nunca se volvió a saber de ellos.»</label>
+    <label for="drone">45 · Sonido siniestro</label>
+    <select id="drone"><option value="off">Ninguno</option><option value="hum">Zumbido eléctrico grave</option><option value="tinnitus">Pitido agudo que sube</option></select>
+    <label class="chk"><input type="checkbox" id="musicbox"> Caja de música que se desafina</label>
+    <label class="chk"><input type="checkbox" id="knock"> Golpes en la pared, de tres en tres</label>
+  </div>
+  <div data-p="render">
+    <h3>Vida en la escena</h3>
+    <label for="life">40 · Movimiento vivo</label>
+    <select id="life"><option value="normal">Normal</option><option value="strong">Intenso</option><option value="off">Apagado</option></select>
+    <label for="beast">46 · Instinto de las criaturas</label>
+    <select id="beast"><option value="both">Salvajes e inteligentes</option><option value="wild">Solo salvajes</option><option value="smart">Solo inteligentes</option><option value="off">Normales</option></select>
+    <p class="hint">Salvajes: se crispan, embisten de golpe y mueven las extremidades más rápido. Inteligentes: te miran siempre, se acercan solo cuando no los ves (como una estatua que avanza si parpadeas) y, si usas IA, el guion les da emboscadas y rodeos. Afecta a payaso, muñeca, araña, esqueleto, hombre alto, zombi, espantapájaros, fantasma, monstruo y tentáculos.</p>
+    <label class="chk"><input type="checkbox" id="env"> Interacción con el entorno: esquivan obstáculos, reaccionan al peligro y abren puertas</label>
+    <p class="hint">Personas, robots, perros y criaturas rodean árboles, rocas, casas, tumbas y camas. Si una criatura o algo siniestro (charco de sangre, pentagrama, ataúd) aparece cerca, se frenan, lo miran, se encogen y retroceden. Las puertas se abren solas cuando alguien se acerca.</p>
+    <label class="chk"><input type="checkbox" id="atk"> Ataques y combate: las criaturas atacan, los personajes esquivan o caen</label>
+    <p class="hint">Cuando una criatura está cerca de un personaje prepara el golpe (se encoge y levanta los brazos), se lanza y ataca: zarpazo, embestida, salto de la araña o ataque en picada del fantasma. A veces el personaje esquiva de un salto lateral; si no, recibe el golpe, sale despedido hacia atrás y la cámara tiembla. Las criaturas corren inclinadas al perseguir.</p>
+    <p class="hint">Los personajes respiran y miran a los lados; los monstruos, payasos y zombis se crispan; árboles y flores se mecen; los fantasmas giran al flotar; las luces titilan como llamas y, en escenas de terror, giran murciélagos sobre la escena. En el clima prueba «Polvo flotando» o «Brasas».</p>
+  </div>
+  <div data-p="llm">
+    <label for="hbeat">39 · Ritmo del terror (IA)</label>
+    <select id="hbeat"><option value="free">Libre</option><option value="slow">Lento: el miedo crece en silencio</option><option value="fast">Rápido: persecución sin descanso</option></select>
+    <label for="hext">47 · Terror extremo (IA)</label>
+    <select id="hext"><option value="off">Sin extremos</option><option value="macabre">Macabro: ritual, tumbas y huesos</option><option value="bloody">Sangriento: charcos, rastros y víctimas</option><option value="extreme">Extremo: masacre y final sin piedad</option></select>
+    <p class="hint">Solo con el género «Terror». Le pide a la IA una película más cruda, macabra y sangrienta, y el estudio reparte la sangre por el suelo de cada escena aunque el punto 21 esté apagado. Pensado para adultos.</p>
+    <label for="hthr">48 · Origen de la amenaza (IA)</label>
+    <select id="hthr"><option value="free">Libre (la IA elige)</option><option value="cult">Culto: un ritual de sacrificio en marcha</option><option value="infect">Infección: los muertos se levantan y contagian</option><option value="exper">Experimento: una criatura mutada y sin control</option><option value="possess">Posesión: alguien conocido deja de ser él</option><option value="beast">Bestia ancestral: caza de noche y no se detiene</option></select>
+    <p class="hint">Solo con el género «Terror». Le da a la IA una regla clara de qué es el horror y cómo mata, para que la masacre tenga lógica. Combínala con el punto 47.</p>
+    <label for="hvic">49 · Víctimas y muertes (IA)</label>
+    <div class="two">
+      <select id="hvic" aria-label="Víctimas"><option value="free">Víctimas: libre</option><option value="one">Una sola: persecución íntima</option><option value="group">Grupo de amigos: caen uno a uno</option><option value="mass">Masacre: muchas y sin escape</option></select>
+      <select id="hshow" aria-label="Cómo se muestran las muertes"><option value="free">Muertes: libre</option><option value="off">Fuera de campo</option><option value="shadow">Sombras y siluetas</option><option value="direct">De frente, sin cortar</option></select>
+    </div>
+    <p class="hint">Solo con el género «Terror». Elige cuántas víctimas hay y si sus muertes se ven de frente, en sombras o solo se oyen. Es la puesta en escena de la crudeza del punto 47.</p>
+  </div>
+  <div data-p="render">
+    <label for="gx">50 · Gore extremo</label>
+    <select id="gx"><option value="off">Sin gore extremo</option><option value="some">Carnicería: cuerpos en el suelo y charcos enormes</option><option value="all">Matadero: cuerpos por todas partes y el suelo empapado</option></select>
+    <p class="hint">Se aplica a cualquier película, con o sin IA. Reparte cuerpos caídos sobre grandes charcos de sangre y rastros por cada escena. Se suma a lo que hace el punto 21. Es ficción con criaturas 3D, pensada para adultos.</p>
+    <label for="gy">51 · Restos y vísceras</label>
+    <select id="gy"><option value="off">Sin restos</option><option value="some">Huesos y trozos esparcidos</option><option value="all">Restos por todas partes: el suelo está cubierto</option></select>
+    <p class="hint">Se aplica a cualquier película, con o sin IA. Deja esqueletos tumbados y trozos de carne oscura sobre el suelo de cada escena. Combínala con el punto 50 para el máximo gore.</p>
+  </div>
+</aside>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
