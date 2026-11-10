@@ -106,31 +106,61 @@ async function genCustom(prompt,url,key){
 }
 
 /* ---------- Instrucciones para la IA directora ---------- */
+/* ---------- Biblioteca de sonidos (carpeta sonidos/) ---------- */
+const SFX=[
+{id:'latido_lento',file:'01_latido_que_se_frena.wav',desc:'latido lento que se frena hasta casi detenerse (6 s)',uso:'tensión que sube antes de un peligro, un personaje que se acerca a algo terrible, calma antes del horror'},
+{id:'crujido_huesos',file:'02_crujido_huesos.wav',desc:'chasquido seco de huesos seguido de un crujido húmedo (1.2 s)',uso:'golpe violento, ataque de una criatura, impacto que rompe algo del cuerpo (gore)'},
+{id:'desgarro_piel',file:'03_desgarro_piel.wav',desc:'piel o tela que se desgarra con tirones lentos (3.2 s)',uso:'herida, forcejeo, una criatura que arranca algo (gore)'},
+{id:'gorgoteo_corte',file:'04_gorgoteo_corte.wav',desc:'gorgoteo de una garganta herida que se corta de golpe (2.6 s)',uso:'agonía o muerte de un personaje, final brusco de una víctima (gore)'},
+{id:'goteo_sangre',file:'05_goteo_sangre.wav',desc:'gotas de sangre cayendo sobre metal con eco (3.8 s)',uso:'después de una violencia, suelo ensangrentado, calma inquietante (gore)'},
+{id:'caja_musica',file:'06_caja_musica_detenida.wav',desc:'caja de música desafinada que se detiene a mitad de melodía (6 s)',uso:'juguete o recuerdo infantil perturbador, locura, niño o muñeca que cobra vida'},
+{id:'drone_grave',file:'07_drone_grave.wav',desc:'tono grave continuo que sube de volumen sin que se note (12 s)',uso:'ambiente de amenaza y presagio en planos largos, lugar siniestro, base de una escena de terror'},
+{id:'campana_oxidada',file:'08_campana_oxidada.wav',desc:'una campanada en un lugar vacío y oxidado (7 s)',uso:'muerte, revelación, cambio de escena, lugar abandonado o aviso'},
+{id:'puerta_cruje',file:'09_puerta_cruje.wav',desc:'puerta de madera que cruje despacio y termina en un golpe (3.3 s)',uso:'algo entra en un lugar, una puerta que se abre sola, final de una escena de encierro'},
+{id:'unas_aranando',file:'10_unas_aranando.wav',desc:'arañazos de uñas que se acercan cada vez más (4.2 s)',uso:'criatura dentro de una pared, alguien encerrado, persecución silenciosa'},
+{id:'respiracion_pesada',file:'11_respiracion_pesada.wav',desc:'dos respiraciones pesadas, la segunda más cerca (4.6 s)',uso:'presencia detrás del personaje, miedo, persecución, alguien escondido cerca'},
+{id:'susurro_lejano',file:'13_susurro_lejano.wav',desc:'murmullo lejano e ininteligible, como voces detrás de una pared (4 s)',uso:'presencia invisible, voces que hablan sin que se vea quién, sensación de estar vigilado'},
+{id:'subgolpe',file:'14_subgolpe.wav',desc:'impacto de graves profundos que se sienten en el pecho (2 s)',uso:'revelación brutal, la criatura aparece de golpe, corte seco al horror'},
+{id:'agonia_quejido',file:'15_agonia_quejido.wav',desc:'quejido de agonía que baja de tono y se ahoga (2.6 s)',uso:'una víctima herida o cayendo, dolor intenso, muerte lenta'},
+{id:'respiracion_agonica',file:'16_respiracion_agonica.wav',desc:'jadeos húmedos y un estertor de pulmones llenos de sangre (4 s)',uso:'víctima moribunda tendida en el suelo, últimos segundos de vida'},
+{id:'grito_ayuda',file:'17_grito_ayuda.wav',desc:'grito de ayuda lejano y amortiguado que sube de tono (2.4 s)',uso:'alguien pide auxilio al ser atacado, un personaje que huye y grita'},
+{id:'silencio_golpe',file:'12_silencio_y_golpe.wav',desc:'dos segundos de silencio y luego un golpe seco (2.4 s)',uso:'susto (jump scare): el golpe llega a los 2 s del sonido, así que el sonido empieza 2 s antes de la aparición'}
+];
+const SFXID=new Set(SFX.map(x=>x.id));
+const sfxTxt=()=>SFX.map(x=>'\n- '+x.id+': '+x.desc+'. Úsalo para: '+x.uso+'.').join('');
+const sfxOf=(h,d)=>(Array.isArray(h.sfx)?h.sfx:[]).filter(e=>e&&SFXID.has(e.id)).slice(0,2).map(e=>({id:e.id,at:num(e.at,0,0,d),vol:num(e.vol,.6,0,1)}));
+const SFXB={};
+const SFXLOAD=(async()=>{try{const C=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!C)return;const oc=new C(1,1,44100);await Promise.all(SFX.map(async x=>{try{const r=await fetch('sonidos/'+x.file);if(r.ok)SFXB[x.id]=await oc.decodeAudioData(await r.arrayBuffer())}catch(e){}}))}catch(e){}})();
+function sfxPlay(ac,out,id,when,vol){const b=SFXB[id];if(!b)return;const s=ac.createBufferSource(),g=ac.createGain();s.buffer=b;g.gain.value=.8*vol;s.connect(g);g.connect(out);s.start(Math.max(ac.currentTime,when))}
 const sys=()=>`Eres un director de cine 3D con oficio. Pones en escena una película de ${cfg.dur} segundos que cuenta una historia con sentido: cada movimiento tiene un motivo y cada plano muestra lo que importa en ese momento. Responde SOLO con un objeto JSON válido, sin texto adicional ni markdown.
 
 FORMATO:
-{"title":"título breve","look":"natural|warm|cold|noir|vintage|neon|horror","music":"epic|calm|mystery|joy|tense","cast":{"hero":{"asset":"robot","color":"#hex","color2":"#hex","scale":1}},"scenes":[{"weather":"none|rain|snow|fireflies|mist|dust|embers","background":"#hex","fog":{"color":"#hex","near":5,"far":30},"ambient":0.5,"sun":{"color":"#hex","intensity":1,"pos":[4,6,5]},"lights":[{"type":"point|spot","color":"#hex","pos":[x,y,z],"intensity":1,"look":[x,y,z]}],"objects":[OBJ,...],"shots":[{"dur":3,"camera":CAM,"caption":"subtítulo breve","transition":"cut|fade"}]}]}
+{"title":"título breve","look":"natural|warm|cold|noir|vintage|neon|horror","music":"epic|calm|mystery|joy|tense|dread|choir|lullaby","cast":{"hero":{"asset":"robot","color":"#hex","color2":"#hex","scale":1}},"scenes":[{"weather":"none|rain|snow|fireflies|mist|dust|embers","background":"#hex","fog":{"color":"#hex","near":5,"far":30},"ambient":0.5,"sun":{"color":"#hex","intensity":1,"pos":[4,6,5]},"lights":[{"type":"point|spot","color":"#hex","pos":[x,y,z],"intensity":1,"look":[x,y,z]}],"objects":[OBJ,...],"shots":[{"dur":3,"camera":CAM,"caption":"subtítulo breve","transition":"cut|fade","sfx":[{"id":"id_de_la_lista","at":0.5,"vol":0.6}]}]}]}\n\nSONIDOS (efectos opcionales): cada plano puede llevar "sfx":[{"id":"id_de_la_lista","at":0.5,"vol":0.6}] con hasta 2 efectos. "at" son segundos desde el inicio de ese plano, en el momento exacto de la acción (el golpe, el arañazo, la aparición). "vol" va de 0 a 1. Usa solo estos ids:${sfxTxt()}\nREGLAS DE SONIDO: pon sonido solo donde refuerce lo que se ve, no en cada plano. Los efectos de gore (crujido_huesos, desgarro_piel, gorgoteo_corte, goteo_sangre) solo si la historia tiene violencia y el tono lo permite; nunca en comedias, películas familiares o escenas tiernas. Para un susto (silencio_golpe), pon "at" 2 segundos antes del momento en que aparece algo, porque el golpe llega a los 2 s del sonido. El drone y la campana sirven de ambiente en planos largos; el latido, para tensión creciente antes de un peligro. No repitas el mismo efecto en planos seguidos.
 
-OBJ: {"shape":"box|sphere|cone|cylinder|torus|knot|ico|plane|pyramid|dome|tetra|octa|dodeca|ring|gut|limb|carbody","color":"#hex","pos":[x,y,z],"scale":[x,y,z],"rot":[gradosX,gradosY,gradosZ],"anim":"spin|bounce|float|orbit|walk|sway|pulse|turn|swing|swing2|roll|none","speed":1,"metal":0.3,"rough":0.4,"glow":0,"opacity":1,"path":[[x,y,z],...],"face":true}
+OBJ: {"shape":"box|sphere|cone|cylinder|torus|knot|ico|plane|pyramid|dome|tetra|octa|dodeca|ring|gut|limb|carbody|taper|capsule|lump|rock|wedge|vase|tube|bone|arch|stairs","color":"#hex","pos":[x,y,z],"scale":[x,y,z],"rot":[gradosX,gradosY,gradosZ],"anim":"spin|bounce|float|orbit|walk|sway|pulse|turn|swing|swing2|roll|shiver|breathe|twitch|writhe|chant|pendulum|lean|shake|kneel|crawl|stagger|hunch|flinch|none","speed":1,"metal":0.3,"rough":0.4,"glow":0,"opacity":1,"path":[[x,y,z],...],"face":true}
 - Cada forma mide 1 unidad antes de escalarla. "scale" puede ser un número (escala uniforme).
 - "turn" gira solo sobre el eje vertical; "swing" y "swing2" balancean en fases opuestas (para brazos o piernas articulados desde su extremo superior); "roll" gira como una rueda.
+- Animaciones de personaje: "shiver" tiembla de miedo, "breathe" respira, "twitch" tiene espasmos (agonía), "writhe" se retuerce en el suelo, "chant" se balancea en un canto ritual, "pendulum" se mece como un cuerpo colgado, "lean" se inclina hacia delante para escuchar o acechar, "shake" se sacude con violencia (un golpe).
+- Animaciones de movimiento: "kneel" se arrodilla, "crawl" se arrastra pegado al suelo, "stagger" tambalea como herido, "hunch" camina encorvado (zombis, criaturas), "flinch" se encoge al recibir golpes repetidos.
 - "glow" (0 a 3) hace que brille (lámparas, sol, neón). "opacity" (0 a 1) sirve para cristal o agua.
 - "path" son los puntos por los que el objeto viaja desde "pos" durante toda la escena. "face":true lo gira hacia donde avanza (su frente es +z).
 - Para personajes y objetos compuestos usa un grupo: {"pos":[..],"anim":"walk","path":[..],"children":[OBJ,...]}, sin "shape". Los hijos usan coordenadas relativas al grupo y pueden tener su propio "anim" (por ejemplo "sway" en los brazos).
 
 ASSETS PREARMADOS: son personajes y objetos ya modelados y animados. Úsalos en "objects" en vez de armarlos a mano:
 {"asset":"robot","color":"#hex","color2":"#hex","pos":[x,y,z],"scale":1,"rot":[0,gradosY,0],"speed":1,"path":[[x,y,z],...],"face":true,"act":"wave"}
-Catálogo (todos apoyan la base en y=0 y miran hacia +z; entre paréntesis la altura aproximada): sas (modelo 3D real de soldado con máscara antigás, 1.8 de alto; úsalo como protagonista o como fuerza de seguridad), robot (3), person (2), dog (1.3), bird (0.5; se coloca en el aire), tree (3.4), pine (3.8), flower (0.9), rock (0.8), cloud (1.5; se coloca en el aire), mountain (5; base de 8x8), house (3.5), car (1.4; largo 3.6), boat (3.2), rocket (3.5), lamp (3.4), ghost (2.5; flota y es translúcido), monster (4.2; brazos largos y ojos rojos), grave (1.9), deadtree (3.8), mansion (7.4; ancho 5), puddle (charco plano de 1.8; con "color" sirve para otros líquidos), trail (rastro de gotas y manchas de 5 de largo; gíralo con "rot" para que lleve a un lugar), bed (cama de 2.2 por 3.2; la cabecera está hacia -z). Gore: viscera (pila de vísceras húmedas de 1 de alto; color2 para otro tejido), carcass (res abierta con costillas en el suelo, 1.2 de alto), hanged (cuerpo colgado de una viga, 3.2 de alto), limb (brazo cercenado en un charco, 1 de largo), head (cabeza cortada en el suelo con sangre, 0.6 de alto), wreck (coche destrozado y ensangrentado de 1.5 de alto con charco, ideal en carreteras y bosques), field (campo de trigo o maíz de 8 por 10 con tallos de 1.8; úsalo como escondite o para el ataque), barn (granero rojo de 4 de ancho con puerta, 4.5 de alto, con charco en la entrada). Terror: clown (2.7), doll (1.6; cabeza que se inclina), spider (1.3; 3 de ancho con patas), skeleton (2.3), scarecrow (3.6), slender (4.3; hombre altísimo sin rostro), zombie (2.5; brazos al frente), tentacle (4.2; tentáculos que se retuercen desde el suelo), pentagram (símbolo rojo brillante plano de 3.2), coffin (ataúd entreabierto de 2.1 de largo con una mano), pumpkin (1.1; calabaza con luz), candle (0.9), door (puerta con marco de 2.6 de alto y 1.4 de ancho; se abre sola cuando un personaje se acerca; gírala con "rot" para colocarla en una pared), bat (0.4; murciélago que bate las alas, se coloca en el aire; con "anim":"orbit" gira sobre la escena). clown, skeleton, slender y zombie caminan por un path como person.
+Catálogo (todos apoyan la base en y=0 y miran hacia +z; entre paréntesis la altura aproximada): sas (modelo 3D real de soldado con máscara antigás, 1.8 de alto; úsalo como protagonista o como fuerza de seguridad), robot (3), person (2), dog (1.3), bird (0.5; se coloca en el aire), tree (3.4), pine (3.8), flower (0.9), rock (0.8), cloud (1.5; se coloca en el aire), mountain (5; base de 8x8), house (3.5), car (1.4; largo 3.6), boat (3.2), rocket (3.5), lamp (3.4), ghost (2.5; flota y es translúcido), monster (4.2; brazos largos y ojos rojos), grave (1.9), deadtree (3.8), mansion (7.4; ancho 5), puddle (charco plano de 1.8; con "color" sirve para otros líquidos), trail (rastro de gotas y manchas de 5 de largo; gíralo con "rot" para que lleve a un lugar), bed (cama de 2.2 por 3.2; la cabecera está hacia -z). Gore: viscera (pila de vísceras húmedas de 1 de alto; color2 para otro tejido), carcass (res abierta con costillas en el suelo, 1.2 de alto), hanged (cuerpo colgado de una viga, 3.2 de alto), limb (brazo cercenado en un charco, 1 de largo), head (cabeza cortada en el suelo con sangre, 0.6 de alto), wreck (coche destrozado y ensangrentado de 1.5 de alto con charco, ideal en carreteras y bosques), field (campo de trigo o maíz de 8 por 10 con tallos de 1.8; úsalo como escondite o para el ataque), barn (granero rojo de 4 de ancho con puerta, 4.5 de alto, con charco en la entrada). Terror: clown (2.7), doll (1.6; cabeza que se inclina), spider (1.3; 3 de ancho con patas), skeleton (2.3), scarecrow (3.6), slender (4.3; hombre altísimo sin rostro), zombie (2.5; brazos al frente), cultist (1.9; encapuchado con túnica; camina y levanta un cuchillo o una vela; úsalo en grupo para rituales), altar (altar de piedra de 2.4 de largo con velas y sangre; úsalo para sacrificios), voodoo (muñeco vudú de tela de 1.2 de alto con alfileres; modelo 3D real; úsalo en rituales y maldiciones), tentacle (4.2; tentáculos que se retuercen desde el suelo), pentagram (símbolo rojo brillante plano de 3.2), coffin (ataúd entreabierto de 2.1 de largo con una mano), pumpkin (1.1; calabaza con luz), candle (0.9), door (puerta con marco de 2.6 de alto y 1.4 de ancho; se abre sola cuando un personaje se acerca; gírala con "rot" para colocarla en una pared), bat (0.4; murciélago que bate las alas, se coloca en el aire; con "anim":"orbit" gira sobre la escena). clown, skeleton, slender y zombie caminan por un path como person.
 - "color" es el color principal y "color2" el secundario (pantalón, techo, acento...). Si los omites usan colores propios.
 - Si un asset avanza por un "path", robot, person y dog mueven brazos y piernas solos, car gira las ruedas y rocket enciende su llama. No hace falta poner "anim". Con "face":true miran hacia donde van.
 - "act":"wave" hace que robot y person saluden. "act":"idle" deja quieto a un personaje o posa al bird (el bird bate las alas por defecto).
 - Usa assets para todo lo que esté en el catálogo y arma a mano solo lo que falte. Puedes repetirlos con distintos colores, tamaños y rotaciones para poblar la escena.
 
 PERSONAJES CON ACCIÓN (lo que da sentido a la película):
+- ACTUACIÓN DE CINE: el protagonista piensa antes de moverse y reacciona a lo que pasa. Antes de entrar en un lugar oscuro o abierto, se detiene y mira alrededor ("act":"look"). Si hay amenaza, se agacha tras un objeto ("act":"crouch") en vez de quedarse en medio. Cuando el peligro se acerca, corre (velocidad 3) hacia una salida o un refugio, nunca en círculos. Tras escapar se detiene, mira atrás ("look" con "face" hacia donde venía el peligro) y solo sigue cuando está seguro. Las pausas (repetir la misma posición) son lo que lo hace parecer actor: dudar, escuchar, volver sobre sus pasos. Nada de caminar a ritmo constante de un punto a otro.
+- Un buen plan del protagonista tiene entre 6 y 12 pasos, con al menos 2 pausas de "look" o "crouch" antes de un momento tenso.
 - Define cada personaje UNA vez en "cast" con un id y úsalo en todas las escenas donde aparezca: {"cast":"hero","pos":[x,0,z],"moves":[...]}. Así conserva su aspecto y su identidad entre planos.
-- "moves" es la línea de tiempo del personaje en segundos DESDE EL INICIO DE LA ESCENA. Cada paso es {"t":segundo en que debe LLEGAR,"to":[x,y,z],"act":"wave|jump|idle","face":"id de otro objeto"}. Parte de "pos" en t=0. Para esperar quieto, repite la misma posición. El motor mueve piernas y brazos solo mientras camina y se detiene al llegar; no uses "path" ni "anim" en personajes con "moves".
-- "act" se ejecuta cuando llega y está quieto: "wave" saluda, "jump" salta de alegría. "face" lo gira para mirar a otro personaje u objeto que tenga "id".
-- Velocidad: caminar 1.5 unidades/s, correr 3, vehículos 4. Calcula t = distancia / velocidad.
+- "moves" es la línea de tiempo del personaje en segundos DESDE EL INICIO DE LA ESCENA. Cada paso es {"t":segundo en que debe LLEGAR,"to":[x,y,z],"act":"wave|jump|idle|look|crouch|stab|fall|punch|beaten|brutal|horror|recoil","face":"id de otro objeto"}. Parte de "pos" en t=0. Para esperar quieto, repite la misma posición. El motor mueve piernas y brazos solo mientras camina y se detiene al llegar; no uses "path" ni "anim" en personajes con "moves".
+- "act" se ejecuta cuando llega y está quieto: "wave" saluda, "jump" salta de alegría, "look" mira a un lado y a otro (buscando peligro, sin moverse), "crouch" se agacha para esconderse, "stab" (solo cultist) apuñala con el brazo derecho mientras está quieto, "fall" (víctima) cae al suelo y se queda tendida, "punch" da puñetazos repetidos (person o cultist, mirando a la víctima con "face"), "beaten" (víctima) se sacude y encoge con cada golpe, "brutal" (víctima ya en el suelo) se sacude con violencia en cada golpe del remate, "horror" (protagonista) se queda paralizado temblando y aparta la mirada, "recoil" (protagonista) retrocede tambaleándose. "face" lo gira para mirar a otro personaje u objeto que tenga "id".
+- Velocidad: caminar 1.5 unidades/s, correr 3, vehículos 4. Calcula t = distancia / velocidad. Al correr (3/s) las piernas se mueven el doble de rápido, así que el movimiento se ve como carrera.
 - El decorado (árboles, casas, rocas, farolas) no se mueve. Solo se animan como ambiente nubes, pájaros, llamas y luces.
 
 CAM: {"move":"static|orbit|dolly|pull|pan|crane|track","size":"wide|medium|close","follow":"id","focus":1.2,"distance":8,"height":2,"angle":0,"look":[0,0,0],"fov":45,"shake":0}
@@ -159,7 +189,20 @@ const SH={box:()=>new THREE.BoxGeometry(1,1,1),sphere:()=>new THREE.SphereGeomet
   gut:()=>{const P=[];for(let i=0;i<=10;i++){const t=i/10;P.push(new THREE.Vector3(Math.sin(t*Math.PI*2.2)*.35,Math.cos(t*Math.PI*1.7)*.12,(t-.5)*.9))}return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),160,.09,18,false)},
   limb:()=>{const P=[];for(let i=0;i<=24;i++){const t=i/24,r=.03+.1*Math.sin(Math.PI*Math.min(1,t*1.1+.05))*Math.min(1,t/.06)+(t>.92?(1-t)*.5:0)+.02*Math.sin(t*11);P.push(new THREE.Vector2(Math.abs(r),-.5+t))}return new THREE.LatheGeometry(P,28)},
   carbody:()=>{const s2=new THREE.Shape();s2.moveTo(-1,0);s2.lineTo(1,0);s2.lineTo(1,.35);s2.quadraticCurveTo(.95,.45,.8,.48);s2.lineTo(.5,.8);s2.lineTo(-.4,.8);s2.lineTo(-.75,.48);s2.quadraticCurveTo(-.95,.45,-1,.35);s2.lineTo(-1,0);const g=new THREE.ExtrudeGeometry(s2,{depth:1,bevelEnabled:true,bevelSize:.04,bevelThickness:.04,bevelSegments:3,curveSegments:8});g.translate(0,0,-.5);return g}};
-const FLAT=['ico','tetra','octa','dodeca','pyramid'];
+function jag(g,a){const P=g.attributes.position;for(let i=0;i<P.count;i++){const x=P.getX(i),y=P.getY(i),z=P.getZ(i),d=1+a*(Math.sin(x*17+y*9)+Math.sin(y*13-z*11)+Math.sin(z*19+x*7))/3;P.setXYZ(i,x*d,y*d,z*d)}g.computeVertexNormals();return g}
+Object.assign(SH,{
+  taper:()=>new THREE.CylinderGeometry(.4,.5,1,40),
+  capsule:()=>new THREE.LatheGeometry([[0,-.5],[.25,-.46],[.4,-.34],[.5,-.14],[.5,.14],[.4,.34],[.25,.46],[0,.5]].map(a=>new THREE.Vector2(a[0],a[1])),40),
+  lump:()=>jag(new THREE.IcosahedronGeometry(.5,3),.1),
+  rock:()=>jag(new THREE.IcosahedronGeometry(.5,2),.22),
+  bone:()=>new THREE.LatheGeometry([[.12,-.5],[.22,-.47],[.12,-.4],[.09,-.3],[.09,.3],[.12,.4],[.22,.47],[.12,.5]].map(a=>new THREE.Vector2(a[0],a[1])),32),
+  arch:()=>new THREE.TorusGeometry(.5,.12,16,48,Math.PI).rotateX(0),
+  stairs:()=>{const s2=new THREE.Shape();s2.moveTo(-.5,-.5);s2.lineTo(.5,-.5);s2.lineTo(.5,-.25);s2.lineTo(.25,-.25);s2.lineTo(.25,0);s2.lineTo(0,0);s2.lineTo(0,.25);s2.lineTo(-.25,.25);s2.lineTo(-.25,.5);s2.lineTo(-.5,.5);s2.closePath();const g=new THREE.ExtrudeGeometry(s2,{depth:1,bevelEnabled:false});g.translate(0,0,-.5);return g},
+  wedge:()=>{const s2=new THREE.Shape();s2.moveTo(-.5,-.5);s2.lineTo(.5,-.5);s2.lineTo(-.5,.5);s2.closePath();const g=new THREE.ExtrudeGeometry(s2,{depth:1,bevelEnabled:false});g.translate(0,0,-.5);return g},
+  vase:()=>new THREE.LatheGeometry([[.15,-.5],[.3,-.45],[.32,-.2],[.2,.1],[.12,.3],[.18,.45],[.22,.5]].map(a=>new THREE.Vector2(a[0],a[1])),40),
+  tube:()=>new THREE.CylinderGeometry(.5,.5,1,40,1,true)
+});
+const FLAT=['ico','tetra','octa','dodeca','pyramid','rock','wedge'];
 const num=(v,d,a,b)=>{v=+v;return isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const vec=(v,d,L=30)=>[0,1,2].map(i=>num(v&&v[i],d[i],-L,L));
 const hex=c=>/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c)?c:'#8899ff';
@@ -401,6 +444,31 @@ const LIB={
     return[bx('box',c,[0,2.6,0],[.8,1.5,.4],m),bx('box','#6b0f0f',[0,2.6,.21],[.08,1.1,.02],m),bx('sphere',e,[0,3.65,0],[.5,.62,.5],{metal:0,rough:.6,glow:.15}),
       arm(1,w?'swing2':'sway'),arm(-1,w?'swing':'sway'),leg(1,w?'swing':'none'),leg(-1,w?'swing2':'none')];
   },
+  cultist:o=>{
+    const r=cl(o.color,'#1a1410'),t=cl(o.color2,'#7a0a18'),k=num(o.speed,1,0,10),w=wk(o),m={metal:0,rough:.95},e='#ff5a1f';
+    const arm=(s,an,kids)=>pv([s*.42,1.6,0],[0,0,0],an,k,[bx('taper',r,[0,-.35,0],[.24,.8,.24],m),bx('sphere','#2a1a1a',[0,-.78,0],[.13,.13,.13],m),...kids]);
+    return[
+      bx('taper',r,[0,.9,0],[1,1.8,.8],m),
+      bx('tube',t,[0,1.15,0],[.85,.1,.66],{metal:.1,rough:.6}),
+      bx('lump',r,[0,1.85,0],[.42,.5,.42],{...m,nz:.06}),
+      bx('sphere','#050303',[0,1.8,.19],[.28,.36,.22],{metal:0,rough:1}),
+      bx('sphere',e,[-.08,1.84,.3],[.05,.05,.05],{glow:2.2}),
+      bx('sphere',e,[.08,1.84,.3],[.05,.05,.05],{glow:2.2}),
+      arm(1,w?'swing2':'none',[bx('box','#bfc5cc',[0,-.95,.12],[.04,.45,.02],{metal:.9,rough:.2})]),
+      arm(-1,o.moves?'larm':(w?'swing':'none'),[bx('cylinder','#e8dcc4',[0,-.9,.1],[.05,.24,.05],{rough:.6}),bx('sphere','#ffb040',[0,-.7,.1],[.08,.08,.08],{glow:2.5})])];
+  },
+  altar:o=>{
+    const st='#4a4a4f',bl='#6a0a14';
+    return[
+      bx('box',st,[0,.45,0],[2.4,.9,1.1],{metal:0,rough:.9}),
+      bx('box','#2a2a2e',[0,.93,0],[2.5,.08,1.2],{metal:.1,rough:.8}),
+      bx('sphere',bl,[0,.96,0],[2.2,.04,1],{metal:0,rough:.2,glow:.25}),
+      bx('sphere',bl,[0,1.0,0],[.9,.14,.9],{metal:.1,rough:.25,glow:.35}),
+      bx('cylinder','#e8dcc4',[-.9,1.15,.35],[.1,.5,.1],{rough:.6}),
+      bx('sphere','#ffb040',[-.9,1.45,.35],[.08,.08,.08],{glow:2.5}),
+      bx('cylinder','#e8dcc4',[.9,1.15,-.35],[.1,.5,.1],{rough:.6}),
+      bx('sphere','#ffb040',[.9,1.45,-.35],[.08,.08,.08],{glow:2.5})];
+  },
   zombie:o=>{
     const c=cl(o.color,'#7c9a6a'),e=cl(o.color2,'#3b3f2f'),k=num(o.speed,1,0,10),w=wk(o),m={metal:0,rough:.95};
     const arm=s=>pv([s*.5,1.55,0],[-80,0,0],'sway',k*.6,[bx('cylinder',c,[0,-.45,0],[.2,.9,.2],m)]);
@@ -527,25 +595,30 @@ LIB.door=o=>{
 };
 const LS={bat:3,clown:1.3,doll:2.2,spider:2.2,skeleton:1.3,scarecrow:.8,slender:.65,zombie:1.3,tentacle:.8,pentagram:1.2,coffin:1.3,pumpkin:2.5,candle:3.5,robot:1.05,person:1.55,dog:2.8,bird:3.2,tree:.85,pine:.8,flower:3.6,rock:2.4,cloud:2,mountain:.65,house:.85,car:1.3,boat:1,rocket:.85,lamp:.95,ghost:1.4,monster:.8,grave:2.4,deadtree:.9,mansion:.5,puddle:2,trail:.8,bed:.9};
 LIB.viscera=o=>{
-  const c=cl(o.color,'#8a0f22'),c2=cl(o.color2,'#d81b60'),g={metal:.15,rough:.2,glow:.25,nz:.06};
+  const c=cl(o.color,'#8a0f22'),c2=cl(o.color2,'#d81b60'),g={metal:.15,rough:.2,glow:.25,nz:.14};
   return[
-    bx('gut',c,[0,.2,0],[2.2,2.2,2.2],g),
-    bx('gut',c2,[.25,.14,.15],[2,2,2],{...g,rot:[0,70,0]}),
-    bx('gut',c,[-.3,.1,-.2],[1.8,1.8,1.8],{...g,rot:[0,-40,8]}),
-    bx('sphere',c,[0,.2,0],[.9,.5,.8],{...g,nz:.2}),
-    bx('sphere','#3a0710',[-.05,.32,.25],[.25,.2,.25],{metal:0,rough:.15})];
+    bx('lump',c,[0,.32,0],[1.6,1.1,1.5],g),
+    bx('capsule',c2,[.35,.22,.2],[.7,.5,.5],{...g,rot:[0,40,80],nz:.08}),
+    bx('capsule',c,[-.4,.18,-.25],[.6,.45,.8],{...g,rot:[0,-30,70],nz:.08}),
+    bx('gut',c2,[.1,.1,-.3],[1.9,1.9,1.9],{...g,rot:[0,70,0],nz:0}),
+    bx('gut',c,[-.2,.08,.35],[1.7,1.7,1.7],{...g,rot:[0,-40,8],nz:0}),
+    bx('bone','#e8dcc4',[.55,.42,.3],[.22,.9,.22],{metal:0,rough:.7,rot:[70,0,30]}),
+    bx('bone','#e8dcc4',[-.6,.3,-.1],[.18,.7,.18],{metal:0,rough:.7,rot:[10,0,-60]}),
+    bx('lump','#3a0710',[0,.5,.1],[.5,.3,.45],{metal:0,rough:.15,glow:.1,nz:.2}),
+    bx('sphere','#4a0a12',[0,.02,0],[2.2,.1,2],{metal:0,rough:.2,glow:.35})];
 };
 LIB.hanged=o=>{
   const c=cl(o.color,'#3a2a2a'),sk='#8a7a6a',M=M0;
   return[
     bx('box','#2a1d12',[0,3.2,0],[2.2,.15,.15],M),
-    bx('cylinder','#5a4a2a',[0,2.6,0],[.04,1.2,.04],M),
-    bx('box',c,[0,1.5,0],[.5,.9,.25],M),
-    bx('sphere',sk,[0,2.2,.02],[.36,.4,.36],{...M,rot:[0,0,0]}),
-    bx('box',c,[.32,1.7,0],[.12,.8,.12],{...M,rot:[0,0,-12]}),
-    bx('box',c,[-.32,1.7,0],[.12,.8,.12],{...M,rot:[0,0,8]}),
-    bx('box',c,[.12,.6,0],[.14,.8,.14],M),
-    bx('box',c,[-.12,.6,0],[.14,.8,.14],M)];
+    bx('tube','#5a4a2a',[0,2.6,0],[.06,1.2,.06],M),
+    bx('capsule',c,[0,1.8,0],[.55,1.1,.35],M),
+    bx('lump',sk,[0,2.5,.02],[.38,.44,.36],{...M,nz:.08}),
+    bx('taper',c,[.42,2.0,0],[.18,1.0,.18],{...M,rot:[0,0,-18]}),
+    bx('taper',c,[-.42,2.0,0],[.18,1.0,.18],{...M,rot:[0,0,20]}),
+    bx('taper',c,[.14,.7,0],[.2,1.2,.2],M),
+    bx('taper',c,[-.14,.7,0],[.2,1.2,.2],M),
+    bx('sphere','#4a0a12',[0,.02,0],[.9,.06,.8],{metal:0,rough:.2,glow:.3})];
 };
 LIB.wreck=o=>{
   const c=cl(o.color,'#5a1b1b'),g={metal:.6,rough:.4},gl={color:'#1a2a3a',metal:.2,rough:.1,opacity:.6},tr={metal:0,rough:.9};
@@ -577,27 +650,33 @@ LIB.barn=o=>{
 LIB.limb=o=>{
   const c=cl(o.color,'#c98a6b'),b=cl(o.color2,'#7a0a18'),g={metal:.1,rough:.35,glow:.1};
   return[
-    bx('limb',c,[0,.18,0],[1.1,1.1,1.1],{...g,rot:[0,0,80]}),
-    bx('sphere',b,[.55,.12,0],[.28,.2,.28],{...g,rot:[0,0,0]}),
-    bx('sphere','#e8c9a8',[-.55,.2,0],[.24,.24,.24],g),
+    bx('taper',c,[0,.18,0],[.5,1.2,.5],{...g,rot:[0,0,80]}),
+    bx('sphere',b,[.6,.14,0],[.34,.22,.34],{...g,nz:.2}),
+    bx('bone','#f2ead8',[.45,.14,0],[.12,.5,.12],{metal:0,rough:.4,rot:[0,0,80]}),
+    bx('capsule',c,[-.6,.18,.05],[.3,.22,.22],{...g,rot:[0,0,80]}),
     bx('sphere',b,[0,.04,0],[.9,.06,.7],{...g,glow:.25})];
 };
 LIB.head=o=>{
   const c=cl(o.color,'#d9b59a'),h=cl(o.color2,'#2b1a12'),g={metal:.05,rough:.5,glow:.1};
   return[
-    bx('sphere',c,[0,.32,0],[.5,.5,.5],g),
-    bx('sphere',h,[0,.42,-.05],[.52,.42,.52],{...g,rot:[0,0,0]}),
+    bx('lump',c,[0,.3,0],[.55,.5,.5],{...g,nz:.1}),
+    bx('capsule',h,[0,.45,-.05],[.56,.3,.5],g),
+    bx('tube','#8a0a18',[0,.05,0],[.34,.1,.34],g),
     bx('sphere','#8a0a18',[0,.04,0],[.9,.08,.8],{...g,glow:.25}),
-    bx('sphere','#ffffff',[.13,.36,.22],[.1,.1,.1],{metal:0,rough:.2}),
-    bx('sphere','#ffffff',[-.13,.36,.22],[.1,.1,.1],{metal:0,rough:.2})];
+    bx('sphere','#ffffff',[.13,.34,.24],[.1,.1,.1],{metal:0,rough:.2}),
+    bx('sphere','#ffffff',[-.13,.34,.24],[.1,.1,.1],{metal:0,rough:.2}),
+    bx('capsule','#7a0a18',[0,.12,.26],[.22,.08,.12],{...g,glow:.3}),
+    bx('bone','#f2ead8',[.12,.15,.1],[.07,.22,.07],{metal:0,rough:.4,rot:[0,0,-20]})];
 };
 LIB.carcass=o=>{
   const b=cl(o.color,'#d8cbb0'),c=cl(o.color2,'#6b0f1a'),g={metal:.1,rough:.6};
-  const ribs=[0,1,2,3,4].map(i=>bx('torus',b,[0,.55,-.5+i*.28],[.55,.45,.55],g));
-  return[...ribs,
-    bx('sphere',b,[0,.25,1.2],[.5,.4,.5],g),
-    bx('sphere',c,[.1,.04,-.3],[.6,.08,.7],{...g,glow:.2}),
-    bx('sphere',c,[0,.06,0],[.5,.1,.9],{...g,glow:.2})];
+  const ribs=[0,1,2,3,4,5].map(i=>bx('arch',b,[0,.1,-.6+i*.24],[1.6,1.4,1.2],g));
+  const spine=[0,1,2,3,4,5,6].map(i=>bx('bone',b,[0,.08,-.8+i*.27],[.16,.4,.16],{...g,rot:[90,0,0]}));
+  return[...ribs,...spine,
+    bx('lump',c,[0,.2,.2],[.9,.5,.8],{...g,nz:.18,glow:.2}),
+    bx('capsule','#8a2a2a',[.25,.2,-.1],[.4,.4,.6],{...g,glow:.15,nz:.06}),
+    bx('lump','#7a0a18',[-.3,.25,.45],[.35,.35,.35],{metal:0,rough:.25,glow:.4,nz:.2}),
+    bx('sphere',c,[0,.02,0],[2.2,.08,2.8],{metal:0,rough:.2,glow:.3})];
 };
 
 function localSpec(txt){
@@ -616,8 +695,8 @@ function localSpec(txt){
 }
 
 const storySys=()=>`Eres guionista de cine corto. Con la idea del usuario escribe una historia con sentido para una película 3D de ${cfg.dur} segundos. Responde SOLO con JSON válido:
-{"title":"","logline":"la historia en una frase","cast":[{"id":"hero","name":"","asset":"robot|person|dog|bird|car|boat|rocket|ghost|monster${cfg.genre==='horror'?'|clown|doll|spider|skeleton|scarecrow|slender|zombie|tentacle':''}","want":"qué quiere conseguir","look":"colores y aspecto"}],"places":["lugares"],"beats":[{"scene":1,"what":"qué ocurre, con acciones simples y visibles","why":"causa o emoción","shot":"wide|medium|close","caption":"subtítulo corto"}]}
-REGLAS: estructura en tres actos: presentación (quién y dónde), conflicto (un obstáculo o un deseo que se complica) y resolución (cómo termina, con un final claro). Cada momento nace del anterior por causa y efecto. El protagonista quiere algo concreto y actúa para lograrlo. Cada beat describe una acción que se pueda ver: ir hacia, llegar, saludar, mirar, saltar, esconderse, volver. Entre 4 y 8 beats en 1 a 3 escenas (lugares). Solo los tipos de personaje indicados. Nada de pensamientos ni acciones que no se vean.${GEN[cfg.genre]?' GÉNERO: '+(GEN[cfg.genre].s||GEN[cfg.genre].p):''}`;
+{"title":"","logline":"la historia en una frase","cast":[{"id":"hero","name":"","asset":"robot|person|dog|bird|car|boat|rocket|ghost|monster${cfg.genre==='horror'?'|clown|doll|spider|skeleton|scarecrow|slender|zombie|tentacle':''}","want":"qué quiere conseguir","look":"colores y aspecto"}],"places":["lugares"],"beats":[{"scene":1,"what":"qué ocurre, con acciones simples y visibles","why":"causa o emoción","shot":"wide|medium|close","caption":"subtítulo corto","actuar":"qué siente y qué hace el cuerpo: mirar alrededor, dudar, agacharse, correr, huir"}]}
+REGLAS: estructura en tres actos: presentación (quién y dónde), conflicto (un obstáculo o un deseo que se complica) y resolución (cómo termina, con un final claro). Cada momento nace del anterior por causa y efecto. El protagonista quiere algo concreto y actúa para lograrlo. Cada beat describe una acción que se pueda ver: ir hacia, llegar, saludar, mirar, saltar, esconderse, volver. Entre 4 y 8 beats en 1 a 3 escenas (lugares). Solo los tipos de personaje indicados. ACTUACIÓN: el protagonista actúa como en cine: antes de avanzar mira alrededor, se oculta si hay peligro, huye en cuanto ve la amenaza y se detiene a comprobar si lo siguen. Cada beat incluye en "actuar" lo que siente y cómo lo muestra el cuerpo. Nada de pensamientos ni acciones que no se vean.${GEN[cfg.genre]?' GÉNERO: '+(GEN[cfg.genre].s||GEN[cfg.genre].p):''}`;
 async function ask(p,key,model,system,user){
   let r;
   if(p==='gemini'){
@@ -671,6 +750,7 @@ function buildScene(sc,cast,tsc){
       if(n>=600)return null;
       const sh=SH[o.shape]?o.shape:'box',op=num(o.opacity,1,0,1),c=hex(o.color),g=num(o.glow,0,0,5);
       const P0={color:c,metalness:num(o.metal,.3,0,1),roughness:num(o.rough,.4,0,1),side:THREE.DoubleSide,flatShading:FLAT.includes(sh)};
+      if(sh==='plane'&&!WET(c))P0.map=groundTex();
       const mat=WET(c)?new THREE.MeshPhysicalMaterial({...P0,clearcoat:.7,clearcoatRoughness:.08}):new THREE.MeshStandardMaterial(P0);
       if(g){mat.emissive=new THREE.Color(c);mat.emissiveIntensity=g}
       if(op<1){mat.transparent=true;mat.opacity=op}
@@ -746,11 +826,11 @@ function sfxHit(ac,out,vol){
 }
 const sfx=(fn,x,z,v,k)=>{try{const ac=LV.ac;if(!ac||ac.state==='closed'||!LV.dst)return;fn(ac,LV.dst,Math.max(.12,1-Math.hypot(x-CAMV.x,z-CAMV.z)/26)*v,k)}catch(e){}};
 let HITS=0;
-const ATK={monster:[3.2,1.2,0,.12],zombie:[2.1,.9,0,0],skeleton:[2.2,.8,0,0],clown:[2.3,1.1,.2,.05],slender:[3.4,.7,0,0],spider:[2.4,2.2,1.1,0],doll:[1.8,1.5,.5,0],ghost:[3.2,2.6,0,.45],scarecrow:[2.2,.6,0,0],tentacle:[4,0,0,.08]};
+const ATK={cultist:[2.2,1.0,0,.1],monster:[3.2,1.2,0,.12],zombie:[2.1,.9,0,0],skeleton:[2.2,.8,0,0],clown:[2.3,1.1,.2,.05],slender:[3.4,.7,0,0],spider:[2.4,2.2,1.1,0],doll:[1.8,1.5,.5,0],ghost:[3.2,2.6,0,.45],scarecrow:[2.2,.6,0,0],tentacle:[4,0,0,.08]};
 const ATXT='\n- COMBATE: las criaturas atacan solas cuando están cerca de un personaje (cada ataque dura 1,3 s: se agazapan, se lanzan y golpean). El personaje a veces esquiva y a veces cae hacia atrás. Acerca criatura y héroe para provocar el enfrentamiento, cámara en close o medium y deja 2 a 3 s de margen; no describas el golpe en los "moves".';
-const OBR={tree:.6,pine:.5,deadtree:.5,rock:1.1,house:2.4,mansion:3,grave:.8,coffin:1.2,bed:1.6,lamp:.3,car:1.8,mountain:3,pumpkin:.5},WKR={person:1,robot:1,dog:1,clown:1,zombie:1,skeleton:1,slender:1,monster:1,spider:1},HER={person:1,robot:1,dog:1},AWL={puddle:1,trail:1,pentagram:1,coffin:1};
+const OBR={tree:.6,pine:.5,deadtree:.5,rock:1.1,house:2.4,mansion:3,grave:.8,coffin:1.2,bed:1.6,lamp:.3,car:1.8,mountain:3,pumpkin:.5},WKR={cultist:1,person:1,robot:1,dog:1,clown:1,zombie:1,skeleton:1,slender:1,monster:1,spider:1},HER={person:1,robot:1,dog:1},AWL={puddle:1,trail:1,pentagram:1,coffin:1};
 const ENVTXT='\n- ENTORNO VIVO: los personajes esquivan y rodean solos los obstáculos (árboles, rocas, casas, tumbas, camas), así que puedes trazar caminos directos. Si una criatura o algo siniestro (charco de sangre, pentagrama, ataúd) aparece cerca del héroe, este se frena, lo mira y retrocede: aprovecha esas reacciones como momentos de tensión. Las puertas (asset door) se abren solas cuando alguien se acerca: úsalas en casas y pasillos. El protagonista (id hero) se detiene, se inclina y mira los restos (viscera, carcass, hanged), velas (candle), calabazas, tumbas y lámparas que tiene cerca antes de seguir, así que colócalos en su camino. Filma como un rodaje real: primero un plano de establecimiento amplio del escenario, luego detalles, reacciones y raccord de mirada entre el personaje y lo que descubre.';
-const LIFE={robot:'b',person:'b',dog:'b',bird:'b',clown:'h',zombie:'h',skeleton:'h',slender:'h',monster:'h',doll:'h',spider:'h',tree:'p',pine:'p',deadtree:'p',scarecrow:'p',flower:'f',ghost:'g'};
+const LIFE={cultist:'h',robot:'b',person:'b',dog:'b',bird:'b',clown:'h',zombie:'h',skeleton:'h',slender:'h',monster:'h',doll:'h',spider:'h',tree:'p',pine:'p',deadtree:'p',scarecrow:'p',flower:'f',ghost:'g'};
 const lifeDark=()=>cfg.genre==='horror'||cfg.look==='horror'||cfg.tod==='night'||cfg.scare!=='off'||cfg.stalk!=='off';
 // Temblor suave (suma de senos con frecuencias no múltiplas, ~0.2 a 2 Hz): no parece vibración mecánica.
 function hn(t,s){return Math.sin(t*1.3+s)*.5+Math.sin(t*2.9+s*1.7)*.3+Math.sin(t*6.1+s*2.3)*.15+Math.sin(t*13.7+s*.7)*.05}
@@ -769,7 +849,7 @@ function hop(tt,T,H,D){
   return{y:0,land:Math.sin(Math.PI*u),stretch:0}
 }
 function pose(it,tb,sd){
-  const m=it.m,k=it.k,P=it.par,gm=P?P.mov:1;
+  const m=it.m,P=it.par,gm=P?P.mov:1;let k=it.k*(P&&P.kmul||1);
   let x=it.p[0],y=it.p[1],z=it.p[2],rx=it.r[0],ry=it.r[1],rz=it.r[2],sx=it.s[0],sy=it.s[1],sz=it.s[2];
   if(!P&&cfg.env&&it.ids.hero===it&&it.all){
     const raw=tb,dI=Math.min(Math.max(raw-(it.lI==null?raw:it.lI),0),.1);it.lI=raw;
@@ -792,10 +872,17 @@ function pose(it,tb,sd){
     x=pa[0]+(g.to[0]-pa[0])*u;y=pa[1]+(g.to[1]-pa[1])*u;z=pa[2]+(g.to[2]-pa[2])*u;
     const dx=g.to[0]-pa[0],dz=g.to[2]-pa[2],go=tb<g.t&&Math.hypot(dx,dz)>.05,H=it.hold;
     H.mov+=((go?1:0)-H.mov)*.25;H.act=go?'':g.act;
+    if(!go&&g.act==='fall')rx+=-1.5708*Math.min(1,Math.max(0,(tb-g.t)/.6));
+    if(!go&&g.act==='beaten'){rz+=Math.sin(tb*22)*.06;rx-=.12*Math.abs(Math.sin(tb*5))}
+    if(!go&&g.act==='brutal'){rz+=Math.sin(tb*26)*.14;ry+=Math.sin(tb*9)*.2;rx-=.08*Math.abs(Math.sin(tb*7))}
+    if(!go&&g.act==='horror'){ry+=Math.sin(tb*1.1)*.3;rz+=Math.sin(tb*26)*.035;rx-=.06}
+    if(!go&&g.act==='recoil'){rx-=.18*Math.min(1,Math.max(0,(tb-g.t)/.3));rz+=Math.sin(tb*24)*.03}
+    if(go){it.kmul=Math.min(2.2,Math.max(.6,Math.hypot(dx,dz)/Math.max(g.t-ta,.01)/1.5));k=it.k*it.kmul}else{it.kmul=1;if(g.act==='crouch')sy*=.8}
     let ty=null;
     if(go)ty=Math.atan2(dx,dz);else if(g.face&&it.ids[g.face]){const q=it.ids[g.face].m.position;ty=Math.atan2(q.x-x,q.z-z)}
     if(ty!==null)it.cy=it.cy==null?ty:it.cy+Math.atan2(Math.sin(ty-it.cy),Math.cos(ty-it.cy))*.2;
     if(it.cy!=null)ry=it.cy+it.r[1];
+    if(!go&&g.act==='look')ry+=Math.sin(tb*1.7)*.9;
     y+=comBob(6*k*tb/(2*Math.PI),.1)*H.mov;
     if(!go&&g.act==='jump')y+=hop(tb,.5,.9,.13).y;
   }else if(it.path){
@@ -818,12 +905,25 @@ function pose(it,tb,sd){
     case'armA':case'armB':case'armA0':case'armB0':{const sg=it.a[3]==='A'?1:-1,gw=it.a.length>4?0:gm,ak=P&&P.ak?Math.abs(P.atk||0):0,tg=P&&P.atk<0?-P.atk*2.6:-((P&&P.atk)||0)*1.3;rx+=Math.sin(tb*6*k)*.6*sg*gw*(1+((P&&P.run)||0)*.7)*(1-ak)+tg*ak;rz+=Math.sin(tb*2*k)*.35*(1-gw)*(1-ak);break}
     case'door':ry-=((P&&P.open)||0)*1.7;break;
     case'turn':ry+=tb*k;break;
-    case'swing':rx+=gait(6*k*tb/(2*Math.PI),.6*gm*(1+((P&&P.run)||0)*.7));break;
-    case'swing2':rx+=gait(6*k*tb/(2*Math.PI)+.5,.6*gm*(1+((P&&P.run)||0)*.7));break;
+    case'swing':if(P&&P.act==='punch'){rx+=-1.1+Math.sin(tb*10)*.5;break}rx+=gait(6*k*tb/(2*Math.PI),.6*gm*(1+((P&&P.run)||0)*.7));break;
+    case'swing2':if(P&&P.act==='stab'){rx+=-1.3+Math.sin(tb*12)*.45;break}if(P&&P.act==='punch'){rx+=-1.1+Math.sin(tb*10+Math.PI)*.5;break}rx+=gait(6*k*tb/(2*Math.PI)+.5,.6*gm*(1+((P&&P.run)||0)*.7));break;
     case'flap':rz+=flapW(10*k*tb/(2*Math.PI),.7);break;
     case'flap2':rz+=flapW(10*k*tb/(2*Math.PI)+.5,.7);break;
     case'wag':ry+=Math.sin(tb*8*k)*.5;break;
     case'roll':it.ra=(it.ra||0)+.083*k*gm;rx+=it.ra;break;
+    case'kneel':sy*=.62;rx+=.12;break;
+    case'crawl':sy*=.5;rz+=Math.sin(tb*4*k)*.08;break;
+    case'stagger':rz+=Math.sin(tb*2.3*k)*.14+Math.sin(tb*5.1)*.04;rx+=Math.sin(tb*1.7*k)*.07;break;
+    case'hunch':rx+=.28;sy*=.94;ry+=Math.sin(tb*.8*k)*.1;break;
+    case'flinch':{const q=tb%2;rx-=.3*Math.exp(-q*6);break}
+    case'shiver':rx+=Math.sin(tb*38)*.04;rz+=Math.sin(tb*31+1)*.03;break;
+    case'breathe':{const b=Math.sin(tb*2.2*k);sy*=1+.025*b;sx*=1-.012*b;sz*=1-.012*b;break}
+    case'twitch':{const q=Math.sin(tb*7.3)*Math.sin(tb*3.1);rx+=q*.25;rz+=Math.sin(tb*11)*.12*(Math.sin(tb*1.7)>.6?1:0);break}
+    case'writhe':rz+=Math.sin(tb*5*k)*.25;ry+=Math.sin(tb*3.4*k)*.35;break;
+    case'chant':ry+=Math.sin(tb*1.4*k)*.25;rz+=Math.sin(tb*2.8*k)*.04;y+=Math.abs(Math.sin(tb*2.8*k))*.02;break;
+    case'pendulum':rz+=Math.sin(tb*1.2*k)*.12;break;
+    case'lean':rx+=.2+Math.sin(tb*.5)*.03;break;
+    case'shake':x+=Math.sin(tb*40)*.02;rz+=Math.sin(tb*33)*.05;break;
     case'larm':if(P&&P.act==='wave'){rz=-2.6+Math.sin(tb*8)*.35;rx=0}else rx+=Math.sin(tb*6*k)*.6*gm;break;
   }
   if(cfg.life!=='off'&&it.kind&&!P&&LIFE[it.kind]){
@@ -1052,7 +1152,7 @@ function plan(spec){
     (Array.isArray(s.shots)&&s.shots.length?s.shots:[{camera:s.camera}]).slice(0,6).forEach((h,i)=>{
       h=h&&typeof h==='object'?h:{};
       const d=num(h.dur,3,.5,30);raw+=d;
-      const sh={d,cam:h.camera||s.camera||{},cap:String(h.caption||'').slice(0,160),fade:cfg.trans==='cut'?false:cfg.trans&&cfg.trans!=='auto'?shots.length>0:h.transition?h.transition==='fade':(i===0&&bi>0),b};
+      const sh={d,sfx:sfxOf(h,d),cam:h.camera||s.camera||{},cap:String(h.caption||'').slice(0,160),fade:cfg.trans==='cut'?false:cfg.trans&&cfg.trans!=='auto'?shots.length>0:h.transition?h.transition==='fade':(i===0&&bi>0),b};
       b.shots.push(sh);shots.push(sh);
     });
     return b;
@@ -1254,14 +1354,15 @@ const GEN={
   d) AMENAZA: nunca entera ni quieta en el centro al principio. Respeta su regla (solo se mueve cuando ella no la mira, o la sigue a distancia) y no la expliques.
   e) DECORADO: suelo oscuro (plane) con 30-60 objetos repartidos en un área de unos 30 por 30 y mucho vacío: mansion o house, deadtree, grave, pine, lamp con luz débil, puddle y trail. Usa weather "mist" o "rain".
   f) SUBTÍTULOS: frases breves en presente que incomodan sin explicar («Alguien estuvo aquí.», «La puerta estaba cerrada.», «No estás sola.»).
-  g) TRANSICIONES: fade en los momentos lentos y cut seco para el susto. look "horror" o "cold", music "tense" o "mystery".`+hTxt()},
+  g) TRANSICIONES: fade en los momentos lentos y cut seco para el susto. look "horror" o "cold", music "dread" o "choir" en los planos de tensión lenta, "lullaby" para una nana siniestra, "tense" para el susto.
+  h) SONIDO (sonido antes que la imagen): el sonido empieza 0.5-1 s ANTES de que se vea lo que lo causa, así el espectador oye la amenaza un instante antes que la ve. Plano 1 (wide): drone_grave de fondo. Plano 2 (detalle): caja_musica o respiracion_pesada si hay alguien cerca. Plano 4 (amenaza lejos): susurro_lejano, bajo. Plano 5 (la víctima mira atrás): unas_aranando o puerta_cruje. Antes del close silencioso: silencio, sin efectos. Justo antes del susto: silencio de 1-2 s, y entonces silencio_golpe o subgolpe, con la aparición en el mismo plano. Clímax: latido_lento solo si la víctima está quieta. Gore (crujido_huesos, desgarro_piel, gorgoteo_corte, goteo_sangre) solo al final, con corte seco. Final: campana_oxidada en el último plano quieto.`+hTxt()},
     get s(){return `TERROR CON SENTIDO: la protagonista (person) quiere algo concreto (encontrar a alguien, volver a casa, recoger algo) y por eso entra al lugar peligroso. Beats: 1) lugar y normalidad inquietante; 2) primer detalle fuera de lugar; 3) ella decide seguir por un motivo claro; 4) primera señal de la amenaza, lejos y apenas visible; 5) la amenaza se acerca o ella descubre algo; 6) persecución o encuentro; 7) clímax con un susto; 8) final ambiguo o con giro. La amenaza es UNA criatura elegida por el lugar (clown, doll, spider, skeleton, scarecrow, slender, zombie, tentacle, ghost o monster) con una regla clara que se respeta y nunca se explica. Se revela por escalones: señal, silueta lejana, una parte, entera solo en el clímax; cada beat sube como mucho un escalón. El decorado la anuncia (door abierta, candle, puddle, bat, pentagram). Cada beat es una acción visible; los beats lentos van antes del susto y los cortos después.`+hTxt()}},
 
   comedy:{p:'Comedia. Colores vivos y saturados, personajes que rebotan, cámara static o pan, ritmo rápido con planos cortos, subtítulos graciosos.',music:'joy',look:'natural'},
   kids:{p:'Cuento infantil. Formas redondeadas, colores pastel, luz suave y cálida, personajes simpáticos, cámara tranquila, subtítulos sencillos.',music:'calm',look:'warm'},
   drama:{p:'Drama. Pocos objetos bien elegidos, planos medios y primeros planos lentos, luz contrastada, paleta sobria, subtítulos emotivos.',music:'calm',look:'cold'}
 };
-const HK=`\n- CAJA DE HERRAMIENTAS DE TERROR (úsala entera; cada pieza tiene su función):\n  · CRIATURAS (caminan con "moves" o "path"): clown (risa y globos; quieto al fondo y en el plano siguiente más cerca), doll (nunca se ve caminar: cambia de sitio entre planos y siempre mira a cámara), spider (techo, esquinas y suelo; rápida y a sacudidas), skeleton (rituales y tumbas), scarecrow (campo; inmóvil hasta que le dan la espalda), slender (alto y callado, al borde del bosque; solo avanza cuando no lo miran), zombie (lentos y en grupo, desde varios lados), monster (bestia de caza; revela sombra, ojos rojos, un brazo), tentacle (surge del suelo junto a grietas y charcos; no camina), ghost (flota y atraviesa; luz fría), bat (presagio en el aire con "orbit").\n  · LUGAR Y PRESAGIOS: mansion, house, door (abierta en el plano 2 sin que nadie la abriera), bed (algo a los pies o bajo la cama), coffin, grave, deadtree, pentagram con candle en círculo (ritual), pumpkin (campo), lamp (única luz y parpadea), puddle y trail (el rastro lleva hacia la amenaza), car (averiado, con faros).\n  · ESCALERA DE REVELACIÓN: señal (huella, sonido, objeto movido) → silueta lejana → una parte (ojos, mano) → entera solo en el clímax. Cada plano sube como mucho un escalón.\n  · GORE Y MACABRO: en cada escena de terror pon restos (viscera, carcass, hanged, limb, head) con más densidad; en exteriores usa coches destrozados (wreck), campos (field) y graneros (barn), con sangre en el suelo y restos alrededor junto a puddle y trail; el close va sobre la herida, la sangre fresca y la carne abierta, con luz roja o cálida que los haga brillar húmedos.\\n  · LUZ: ambient bajo, un spot bajo y lateral, "glow" rojo solo en la amenaza, fog near 2 y far 20-30, weather mist o rain.\n  · CÁMARA: follow con dolly en calma; static en un wide vacío; close con fov 28-35 en el rostro; pull para revelar un vacío; "from/to/look" para un plano a ras del suelo; shake 0-0.2 en tensión y 0.6-0.9 en el ataque; último plano quieto.\n  · MONTAJE: fade en lo lento, cut seco en el susto; planos largos antes del susto y de 1 a 2 s después.`;
+const HK=`\n- CAJA DE HERRAMIENTAS DE TERROR (úsala entera; cada pieza tiene su función):\n  · RITUALES: 3 a 5 cultistas (cultist) en círculo alrededor de un altar (altar) con velas, con pentagram en el suelo; un person tumbado sobre el altar es el sacrificio. ASESINATO: un cultista se acerca a la víctima (person) con "moves", se detiene y apuñala ("act":"stab") mientras la víctima cae ("act":"fall" en el paso siguiente); pon un puddle bajo ella y un trail que se aleje de su cuerpo. Después otro cultista arrastra el cuerpo hacia el altar en pasos lentos. PALIZA: el atacante (person o cultist) se acerca a la víctima con "moves" rápidos, se queda quieto con "act":"punch" mirándola ("face"), y la víctima alterna "act":"beaten" en el mismo tiempo; repite 2 o 3 veces con pausas cortas, y termina con "act":"fall" en la víctima. Usa "shake" o "flinch" en planos cortos (1.5 s) para el impacto de cada golpe. REMATE: cuando la víctima cae, el atacante sigue pegando sin parar: tras el "fall" la víctima pasa a "brutal" (en el suelo, en el mismo punto) y el atacante vuelve a "punch" con más golpes, más rápidos y más cerca; pon puddle y trail que crezcan en cada plano, y termina con el cuerpo inmóvil y un plano quieto del charco. REACCIÓN DEL PROTAGONISTA: cada vez que el protagonista (hero) vea un asesinato, una paliza, un cadáver, sangre o un ritual, reacciona en el paso siguiente: primero "horror" (se queda paralizado temblando, aparta la mirada con "face" hacia otro lado) y luego "recoil" (retrocede tambaleándose) antes de huir o esconderse. Nunca mira una escena violenta sin reaccionar. Cuando el protagonista se acerca, los cultistas se giran a la vez y uno levanta el cuchillo, con "moves" lentos y en silencio.\n  · CRIATURAS (caminan con "moves" o "path"): clown (risa y globos; quieto al fondo y en el plano siguiente más cerca), doll (nunca se ve caminar: cambia de sitio entre planos y siempre mira a cámara), spider (techo, esquinas y suelo; rápida y a sacudidas), skeleton (rituales y tumbas), scarecrow (campo; inmóvil hasta que le dan la espalda), slender (alto y callado, al borde del bosque; solo avanza cuando no lo miran), zombie (lentos y en grupo, desde varios lados), monster (bestia de caza; revela sombra, ojos rojos, un brazo), tentacle (surge del suelo junto a grietas y charcos; no camina), ghost (flota y atraviesa; luz fría), bat (presagio en el aire con "orbit").\n  · LUGAR Y PRESAGIOS: mansion, house, door (abierta en el plano 2 sin que nadie la abriera), bed (algo a los pies o bajo la cama), coffin, grave, deadtree, pentagram con candle en círculo (ritual), pumpkin (campo), lamp (única luz y parpadea), puddle y trail (el rastro lleva hacia la amenaza), car (averiado, con faros).\n  · ESCALERA DE REVELACIÓN: señal (huella, sonido, objeto movido) → silueta lejana → una parte (ojos, mano) → entera solo en el clímax. Cada plano sube como mucho un escalón.\n  · GORE Y MACABRO: en cada escena de terror pon restos (viscera, carcass, hanged, limb, head) con más densidad; en exteriores usa coches destrozados (wreck), campos (field) y graneros (barn), con sangre en el suelo y restos alrededor junto a puddle y trail; el close va sobre la herida, la sangre fresca y la carne abierta, con luz roja o cálida que los haga brillar húmedos.\\n  · LUZ: ambient bajo, un spot bajo y lateral, "glow" rojo solo en la amenaza, fog near 2 y far 20-30, weather mist o rain.\n  · CÁMARA: follow con dolly en calma; static en un wide vacío; close con fov 28-35 en el rostro; pull para revelar un vacío; "from/to/look" para un plano a ras del suelo; shake 0-0.2 en tensión y 0.6-0.9 en el ataque; último plano quieto.\n  · MONTAJE: fade en lo lento, cut seco en el susto; planos largos antes del susto y de 1 a 2 s después.`;
 const CM={ceiling:'esquina del techo, vigilando',floor:'a ras del suelo, reptando',top:'cenital, bajando desde arriba',kubrick:'travelling hacia el fondo',shoulder:'sobre el hombro del protagonista'};
 const htools=()=>{
   const c=cfg,A=[],on=(k,t)=>k&&A.push(t);
@@ -1287,6 +1388,38 @@ const MU={
   joy:{r:55,b:116,c:[[0,4,7],[5,9,12],[7,11,14],[-3,0,4]],w:'triangle',a:1},
   tense:{r:40,b:100,c:[[0,3,6],[1,4,7]],w:'sawtooth',d:1}
 };
+/* ---------- Música inquietante (drones, coros fantasmales, nana de caja de música) ---------- */
+const EER={
+  dread:{root:38,chords:[[0,1,6],[0,1,7],[0,6,7],[-1,1,6]],step:6,vib:.35,lp:520,amp:.05,sub:1},
+  choir:{root:52,chords:[[0,3,7,10],[0,2,7,10],[-2,3,7,8],[0,3,6,10]],step:8,vib:4.5,lp:1500,amp:.035,bell:1},
+  lullaby:{root:62,chords:[[0,4,7,11],[-2,4,5,9],[-3,2,7,10],[0,4,7,9]],step:2,vib:.5,lp:2600,amp:.06,mel:[12,11,9,11,12,12,12,11,11,11,12,14,14,12,11,9,7,9,11,12,11,9,7,7]}
+};
+function scoreEerie(ac,out,key,total,vol){
+  const m=EER[key];if(!m||!vol)return;
+  const T=ac.currentTime+.1,g=ac.createGain(),lp=ac.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=m.lp;lp.Q.value=.7;
+  g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(vol,T+3);
+  g.gain.setValueAtTime(vol,T+Math.max(total-3,3));g.gain.linearRampToValueAtTime(0,T+total);
+  g.connect(lp);lp.connect(out);
+  const hz=n=>440*Math.pow(2,(n-69)/12);
+  const tone=(n,t,d,a,det)=>{
+    const o=ac.createOscillator(),o2=ac.createOscillator(),e=ac.createGain(),lf=ac.createOscillator(),lg=ac.createGain();
+    o.type='sine';o2.type='triangle';o.frequency.value=hz(n);o2.frequency.value=hz(n)*(1+det);
+    lf.frequency.value=m.vib;lg.gain.value=hz(n)*.004;lf.connect(lg);lg.connect(o.frequency);lg.connect(o2.frequency);
+    o.connect(e);o2.connect(e);e.connect(g);
+    e.gain.setValueAtTime(.0001,t);e.gain.linearRampToValueAtTime(a,t+Math.min(d/3,2.5));e.gain.linearRampToValueAtTime(.0001,t+d);
+    [o,o2,lf].forEach(x=>{x.start(t);x.stop(t+d+.1)});
+  };
+  let t=0,i=0;
+  while(t<total-.2){
+    const c=m.chords[i%m.chords.length],d=Math.min(m.step*(1+.25*Math.sin(i*1.7)),total-t);
+    c.forEach((n,k)=>tone(m.root+n,T+t,d+.6,m.amp,.002+.0015*k));
+    if(m.sub&&i%2===1)tone(m.root-12+c[0],T+t,d,m.amp*.8,0);
+    if(m.bell&&i%2===0)tone(m.root+24+c[(i*3)%c.length],T+t+d*.5,4.5,m.amp*.6,.004);
+    if(m.mel){const n=m.mel[i%m.mel.length];tone(m.root+12+n,T+t,Math.min(d,1.6),m.amp*1.4,-.02)}
+    t+=d;i++;
+  }
+}
 function score(ac,out,mood,total,vol){
   const m=MU[mood];if(!m||!vol)return;
   const g=ac.createGain(),lp=ac.createBiquadFilter(),T=ac.currentTime+.1,B=60/m.b;
@@ -1468,17 +1601,20 @@ function camHud(ctx,t,cm,t33,N,bo){
   if((t*1.2|0)%2===0){ctx.fillStyle='#ff2020';ctx.beginPath();ctx.arc(52,92+bo,9,0,6.3);ctx.fill()}put('REC',72,78+bo,'left','#ff5050');
   if(lapse){put(t<t33?'▶▶ x'+Math.round(sp/(t33/N)/100)*100:'▶ x1',40,650-bo,'left');put('NOCHE '+(k+1)+'/'+N,1240,650-bo,'right')}
 }
-const MDL={},MCL={},MDLS={sas:{u:'modelos/sas_cs2_red.glb',h:1.8}};
-function loadModels(){return Promise.all(Object.keys(MDLS).map(k=>new Promise(res=>{try{new THREE.GLTFLoader().load(MDLS[k].u,g=>{const root=new THREE.Group(),sc=g.scene;const sz=new THREE.Box3().setFromObject(sc).getSize(new THREE.Vector3());sc.scale.setScalar(MDLS[k].h/Math.max(sz.y,1e-3));sc.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(sc),c=b2.getCenter(new THREE.Vector3());sc.position.set(-c.x,-b2.min.y,-c.z);root.add(sc);MDL[k]=root;MCL[k]=g.animations||[];res()},undefined,()=>res())}catch(e){res()}})))}
-const MODLOAD=loadModels();
+const MDL={},MCL={},MDLS={sas:{u:'modelos/sas_cs2_red.glb',h:1.8},voodoo:{u:'modelos/voodoo_doll.glb',h:1.2}};
+function loadGLBModels(){return Promise.all(Object.keys(MDLS).map(k=>new Promise(res=>{try{new THREE.GLTFLoader().load(MDLS[k].u,g=>{const root=new THREE.Group(),sc=g.scene;const sz=new THREE.Box3().setFromObject(sc).getSize(new THREE.Vector3());sc.scale.setScalar(MDLS[k].h/Math.max(sz.y,1e-3));sc.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(sc),c=b2.getCenter(new THREE.Vector3());sc.position.set(-c.x,-b2.min.y,-c.z);root.add(sc);MDL[k]=root;MCL[k]=g.animations||[];res()},undefined,()=>res())}catch(e){res()}})))}
+const MODLOAD=loadGLBModels();
+let GTEX=null;
+function groundTex(){if(GTEX)return GTEX;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const im=x.createImageData(256,256);for(let i=0;i<im.data.length;i+=4){const v=200+Math.random()*55|0;im.data[i]=v;im.data[i+1]=v;im.data[i+2]=v;im.data[i+3]=255}x.putImageData(im,0,0);for(let k=0;k<70;k++){x.fillStyle='rgba(0,0,0,'+(Math.random()*.1).toFixed(3)+')';x.beginPath();x.arc(Math.random()*256,Math.random()*256,Math.random()*20+2,0,6.3);x.fill()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(8,8);t.encoding=THREE.sRGBEncoding;GTEX=t;return t}
+function envTex(R,bg){const es=new THREE.Scene(),g=new THREE.SphereGeometry(50,32,16),top=new THREE.Color(bg).lerp(new THREE.Color('#cfe3ff'),.45),bot=new THREE.Color(bg).multiplyScalar(.35),cols=[],P=g.attributes.position;for(let i=0;i<P.count;i++){const u=Math.min(1,Math.max(0,(P.getY(i)/50+1)/2)),c=bot.clone().lerp(top,u);cols.push(c.r,c.g,c.b)}g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));es.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));const pm=new THREE.PMREMGenerator(R),rt=pm.fromScene(es,.04).texture;pm.dispose();return rt}
 function mdlClone(o){const m=THREE.SkeletonUtils.clone(MDL[o.asset]);m.traverse(q=>{if(q.isMesh){q.castShadow=true;q.receiveShadow=true}});if(MCL[o.asset]&&MCL[o.asset].length)m.userData.clip=MCL[o.asset][0];return m}
-function render(spec){return MODLOAD.then(()=>renderCore(spec))}
+function render(spec){return Promise.all([MODLOAD,SFXLOAD]).then(()=>renderCore(spec))}
 function renderCore(spec){
   return new Promise((res,rej)=>{
     if(!window.MediaRecorder)return rej(new Error('Tu navegador no puede grabar video. Prueba con Chrome, Edge o Firefox.'));
     if(cfg.stalk!=='off'||GORE()!=='off'||cfg.gx!=='off'||cfg.gy!=='off'||cfg.eyes!=='off'||(cfg.life!=='off'&&lifeDark())){spec=JSON.parse(JSON.stringify(spec));
       (spec.scenes?spec.scenes.map(x=>x.objects||(x.objects=[])):[spec.objects||(spec.objects=[])]).forEach((a,i)=>{const d=i%2?9:-9;if(cfg.life!=='off'&&lifeDark())for(let j=0;j<3;j++)a.push({asset:'bat',pos:[3+j*1.6,4+j*.7,-1+j],anim:'orbit',speed:.45+j*.2,scale:1.1});if(cfg.stalk!=='off')a.push({asset:cfg.stalk,pos:[d,0,-9],path:[[d,0,-9],[d/3,0,-4]],face:true,scale:1.3});
-        if(GORE()!=='off'){let z=i*7919+123457;const R=()=>(z=(z*16807)%2147483647)/2147483647,n=GORE()==='lots'?14:6;
+        if(GORE()!=='off'){let z=i*7919+123457;const R=()=>(z=(z*16807)%2147483647)/2147483647,n=GORE()==='lots'?18:6;
           for(let j=0;j<n;j++)a.push({asset:'puddle',pos:[R()*30-15,0,R()*25-10],scale:.7+R()*1.3,rot:[0,R()*360,0]});
           for(let j=0;j<(n>6?9:4);j++)a.push({asset:'viscera',pos:[R()*25-12,0,R()*20-10],scale:.8+R()*.6,rot:[0,R()*360,0]});
           for(let j=0;j<(n>6?4:2);j++)a.push({asset:'carcass',pos:[R()*25-12,0,R()*20-10],rot:[0,R()*360,0]});
@@ -1505,7 +1641,7 @@ function renderCore(spec){
     const cv=$('#gl'),k=cfg.res==='1080'?1.5:1,W=1280*k,H=720*k,fps=+cfg.fps||30,ctx=cv.getContext('2d');
     const pick=(v,x,L,fb)=>v==='auto'?(L.includes(x)?x:fb):v;
     const CR=cfg.cred&&cfg.frz==='off'?6:0,T=pl.total+CR,gd=P[cfg.prov].llm?(GEN[cfg.genre]||{}):{};
-    const mood=pick(cfg.music,spec.music,Object.keys(MU),gd.music||'calm'),lk=LOOKS[pick(cfg.look,spec.look,Object.keys(LOOKS),gd.look||'natural')]||{};
+    const mood=pick(cfg.music,spec.music,Object.keys(MU).concat(Object.keys(EER)),gd.music||'calm'),lk=LOOKS[pick(cfg.look,spec.look,Object.keys(LOOKS),gd.look||'natural')]||{};
     const wx=cfg.fx==='auto'?(spec.scenes||[]).map(x=>x&&x.weather).find(w=>w&&w!=='none'):cfg.fx;
     const amb=cfg.amb==='auto'?({rain:'rain',snow:'wind',fireflies:'night',mist:'wind'}[wx]||'none'):cfg.amb;
     const sc0=cfg.scare==='end'?pl.total-1.4:cfg.scare==='mid'?pl.total*.55:-1,sa=t=>sc0>=0&&t>=sc0&&t<sc0+.6?1-(t-sc0)/.6:0,fl={soft:.35,hard:.8}[cfg.flick]||0,fz=cfg.frz==='off'?-1:pl.total-(+cfg.frz),cm=cfg.tpl!=='off'?'lapse':cfg.cam,N=+cfg.nights||1,t33=pl.blocks.length>1?pl.blocks[1].t0:pl.total*.6,
@@ -1557,14 +1693,15 @@ function renderCore(spec){
     try{R=new THREE.WebGLRenderer({canvas:gc,antialias:true,preserveDrawingBuffer:true})}
     catch(e){return rej(new Error('Tu navegador no puede usar gráficos 3D (WebGL).'))}
     R.setSize(W,H,false);
+    pl.blocks.forEach(b=>{try{const bg=b.sc.S.background;if(bg&&bg.isColor)b.sc.S.environment=envTex(R,bg)}catch(e){}});
     R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;
     const cam=new THREE.PerspectiveCamera(45,W/H,.1,300);
     const st=cv.captureStream(fps),AU=window.AudioContext||window.webkitAudioContext;let AC=null;
-    if(AU&&(cfg.atk||(mood!=='none'&&+cfg.vol>0)||amb!=='none'||cfg.heart||sc0>=0||bl||cfg.steps!=='off'||cfg.whisp!=='off'||fz>=0||cfg.creak!=='off'||cfg.breath||cfg.tick||cfg.riser||cfg.hbvig||cfg.pov==='live'||cfg.musicbox||cfg.knock||cfg.drone!=='off'||stT.length||bkT.length)){
+    if(AU&&(pl.shots.some(h=>h.sfx.length)||pl.blocks.some(b=>(b.sc.items||[]).some(it=>it.mv&&it.mv.some(g=>g.act==='fall'||g.act==='punch'||g.act==='brutal'||g.act==='horror'||g.act==='recoil')))||cfg.atk||(mood!=='none'&&+cfg.vol>0)||amb!=='none'||cfg.heart||sc0>=0||bl||cfg.steps!=='off'||cfg.whisp!=='off'||fz>=0||cfg.creak!=='off'||cfg.breath||cfg.tick||cfg.riser||cfg.hbvig||cfg.pov==='live'||cfg.musicbox||cfg.knock||cfg.drone!=='off'||stT.length||bkT.length)){
       try{AC=new AU();if(cfg.pov==='live')AC.suspend();else AC.resume();const dd=AC.createMediaStreamDestination(),dst=AC.createGain(),A0=AC.currentTime+.1;dst.connect(dd);LV.ac=AC;LV.dst=dst;
       if(fz>=0){dst.gain.setValueAtTime(1,A0+fz);dst.gain.setValueAtTime(0,A0+fz+.02);
         if(cfg.fzs==='tone'){const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=1000;g.gain.setValueAtTime(0,A0+fz);g.gain.setValueAtTime(.06,A0+fz+.03);o.connect(g);g.connect(dd);o.start(A0+fz);o.stop(A0+T+.2)}}
-      score(AC,dst,mood,T,cfg.vol/100*.8);ambience(AC,dst,amb,T,.3);if(cfg.heart||cfg.hbvig)heart(AC,dst,T,.5);if(sc0>=0)sting(AC,dst,sc0,.6);if(bl)splat(AC,dst,bt,.9);if(cfg.steps!=='off')steps(AC,dst,cfg.steps,T,.5);if(cfg.whisp!=='off')whispers(AC,dst,cfg.whisp,T,cfg.whisp==='close'?.35:.16);if(cfg.creak!=='off')creaks(AC,dst,cfg.creak,T,.18);if(cfg.breath)breath(AC,dst,T,.3);if(cfg.tick)tick(AC,dst,T,.25);if(cfg.riser)riser(AC,dst,sc0>=0?sc0:T*.9,.14);if(cfg.musicbox)musicbox(AC,dst,T,.12);if(cfg.knock)[.25,.55].forEach(a=>knock(AC,dst,T*a,.5));if(cfg.drone!=='off')droneSnd(AC,dst,cfg.drone,T,cfg.drone==='hum'?.07:.015);stT.forEach(a=>staticSnd(AC,dst,a,.3));bkT.forEach(a=>thud(AC,dst,a,.9));if(cfg.hush&&sc0>=0){const A=AC.currentTime+.1;dst.gain.setValueAtTime(1,A+Math.max(0,sc0-2.6));dst.gain.linearRampToValueAtTime(.05,A+Math.max(.1,sc0-2.2));dst.gain.setValueAtTime(1,A+sc0-.01)}st.addTrack(dd.stream.getAudioTracks()[0])}catch(e){AC=null}
+      (EER[mood]?scoreEerie(AC,dst,mood,T,cfg.vol/100*.8):score(AC,dst,mood,T,cfg.vol/100*.8));ambience(AC,dst,amb,T,.3);if(cfg.heart||cfg.hbvig)heart(AC,dst,T,.5);if(sc0>=0)sting(AC,dst,sc0,.6);if(bl)splat(AC,dst,bt,.9);if(cfg.steps!=='off')steps(AC,dst,cfg.steps,T,.5);if(cfg.whisp!=='off')whispers(AC,dst,cfg.whisp,T,cfg.whisp==='close'?.35:.16);if(cfg.creak!=='off')creaks(AC,dst,cfg.creak,T,.18);if(cfg.breath)breath(AC,dst,T,.3);if(cfg.tick)tick(AC,dst,T,.25);if(cfg.riser)riser(AC,dst,sc0>=0?sc0:T*.9,.14);if(cfg.musicbox)musicbox(AC,dst,T,.12);if(cfg.knock)[.25,.55].forEach(a=>knock(AC,dst,T*a,.5));if(cfg.drone!=='off')droneSnd(AC,dst,cfg.drone,T,cfg.drone==='hum'?.07:.015);stT.forEach(a=>staticSnd(AC,dst,a,.3));bkT.forEach(a=>thud(AC,dst,a,.9));pl.shots.forEach(h=>h.sfx.forEach(e=>sfxPlay(AC,dst,e.id,A0+h.t0+e.at,e.vol)));pl.blocks.forEach(b=>(b.sc.items||[]).forEach(it=>{if(it.mv)it.mv.forEach(g=>{if(g.act==='fall'){const T0=A0+b.t0+g.t;sfxPlay(AC,dst,'grito_ayuda',T0-.5,.8);sfxPlay(AC,dst,'agonia_quejido',T0,.7);sfxPlay(AC,dst,'respiracion_agonica',T0+.9,.6)}if(g.act==='punch'){const T0=A0+b.t0+g.t;[.4,.95,1.5].forEach(d=>sfxPlay(AC,dst,'crujido_huesos',T0+d,.8))}if(g.act==='beaten')sfxPlay(AC,dst,'agonia_quejido',A0+b.t0+g.t+.1,.5);if(g.act==='horror'){const T2=A0+b.t0+g.t;sfxPlay(AC,dst,'respiracion_pesada',T2,.6);sfxPlay(AC,dst,'grito_ayuda',T2+.2,.5)}if(g.act==='recoil')sfxPlay(AC,dst,'grito_ayuda',A0+b.t0+g.t,.6);if(g.act==='brutal'){const T1=A0+b.t0+g.t;sfxPlay(AC,dst,'agonia_quejido',T1,.8);[.2,.7,1.2].forEach(d=>sfxPlay(AC,dst,'crujido_huesos',T1+d,.7))}})}));if(cfg.hush&&sc0>=0){const A=AC.currentTime+.1;dst.gain.setValueAtTime(1,A+Math.max(0,sc0-2.6));dst.gain.linearRampToValueAtTime(.05,A+Math.max(.1,sc0-2.2));dst.gain.setValueAtTime(1,A+sc0-.01)}st.addTrack(dd.stream.getAudioTracks()[0])}catch(e){AC=null}
     }
     const mt=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'',vb=k>1?12e6:6e6;
     const rec=new MediaRecorder(st,mt?{mimeType:mt,videoBitsPerSecond:vb}:{videoBitsPerSecond:vb}),parts=[];
@@ -1601,8 +1738,8 @@ function renderCore(spec){
           cam.updateProjectionMatrix();cam.rotateZ({soft:.1,hard:.26,grow:.3*u}[cfg.tilt]||0)}
         const q=sa(t);if(q){cam.position.x+=(Math.random()-.5)*q*.5;cam.position.y+=(Math.random()-.5)*q*.5}
         if(cfg.torch!=='off'){
-          if(!b.sc.tl){const L=new THREE.SpotLight(0xffe0a6,0,40,Math.PI/6,.45,1);L.userData.keep=1;b.sc.S.add(L);b.sc.S.add(L.target);b.sc.tl=L;
-            const H2=new THREE.HemisphereLight(0x8a9ac0,0x1a1410,.2);b.sc.S.add(H2)}
+          if(!b.sc.tl){const L=new THREE.SpotLight(0xffe0a6,0,40,Math.PI/6,.45,1);L.userData.keep=1;L.castShadow=true;L.shadow.mapSize.set(1024,1024);L.shadow.camera.near=.3;L.shadow.camera.far=40;L.shadow.bias=-.0008;L.shadow.normalBias=.02;b.sc.S.add(L);b.sc.S.add(L.target);b.sc.tl=L;
+            const H2=new THREE.HemisphereLight(0x8a9ac0,0x1a1410,.2);b.sc.S.add(H2);b.sc.S.traverse(o=>{if(o.isAmbientLight)o.intensity*=.5});if(b.sc.S.fog)b.sc.S.fog.far=Math.max(b.sc.S.fog.far,30)}
           const L=b.sc.tl,sw=cfg.torch==='sweep',sk=cfg.torch==='shaky',fw=new THREE.Vector3(),rt=new THREE.Vector3();
           cam.getWorldDirection(fw);rt.crossVectors(fw,new THREE.Vector3(0,1,0)).normalize();
           L.angle={narrow:Math.PI/9,normal:Math.PI/6.5,wide:Math.PI/4.5}[cfg.tsize]||Math.PI/6.5;
@@ -1611,6 +1748,8 @@ function renderCore(spec){
           const side=sw?Math.sin(t*.7)*.8:0,jit=sk?(Math.random()-.5)*.06:0;
           L.target.position.copy(cam.position).addScaledVector(fw,12).addScaledVector(rt,side+jit);
           L.target.updateMatrixWorld();
+          if(!b.sc.tb){const bm=new THREE.MeshBasicMaterial({color:0xffe0a6,transparent:true,opacity:.07,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.02,1,1,28,1,true),bm);mesh.userData.keep=1;mesh.renderOrder=2;b.sc.S.add(mesh);b.sc.tb=mesh}
+          {const BM=b.sc.tb,LH=22,dir=new THREE.Vector3().subVectors(L.target.position,L.position).normalize();BM.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().negate());BM.position.copy(L.position).addScaledVector(dir,LH/2);const R=LH*Math.tan(L.angle);BM.scale.set(R,LH,R);BM.material.opacity=.07*Math.max(.2,L.intensity/14)}
         }
         R.render(b.sc.S,cam);
         finish(si,t);
