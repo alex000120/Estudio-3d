@@ -12,7 +12,7 @@ const P={
   custom:{short:'API de video personalizada',video:1,model:'',ml:'URL del endpoint',mh:'Ejemplo: https://api.miempresa.com/v1/video'}
 };
 const S={none:'',cine:'3D render, cinematic lighting, high detail, ',toon:'3D animated cartoon, Pixar-like, soft lighting, ',poly:'low-poly 3D animation, ',iso:'isometric 3D render, '};
-const D={prov:'local',keys:{},models:{},url:'',lists:{},style:'cine',shape:'auto',move:'spin',dur:15,autodur:'ai',aware:'normal',mac:'off',bmsg:'off',chainsnd:false,laugh:false,drip:false,lids:false,genre:'none',htheme:'free',hend:'free',review:false,story:true,amb:'auto',trans:'auto',subs:'white',subsz:'38',tod:'auto',lens:'auto',hand:'auto',flick:'off',scare:'off',heart:false,vhs:false,stalk:'off',gore:'off',lensblood:false,steps:'off',whisp:'off',torch:'off',tsize:'normal',tpl:'off',cam:'off',nights:'3',frz:'off',fzs:'tone',eyes:'off',creak:'off',breath:false,tick:false,thick:false,zoom:'off',tilt:'off',wake:'03:33',cred:false,dir:'',music:'auto',vol:60,look:'auto',bars:'none',vig:true,grain:true,blur:false,fx:'auto',res:'720',fps:'30',pov:'off',povlook:'glance',povbob:'walk',povhands:false,povgore:false,hush:false,riser:false,blackout:'off',hbvig:false,sanity:false,rtitle:false,hbeat:'free',hext:'off',hthr:'free',hvic:'free',hshow:'free',gx:'off',gy:'off',life:'normal',beast:'both',env:true,atk:true,cmode:'off',view:'off',stat:'off',subl:false,card:'off',endc:false,drone:'off',musicbox:false,knock:false,auth:'Authorization: Bearer {key}',body:'{"prompt":"{prompt}"}'};
+const D={prov:'local',keys:{},models:{},url:'',lists:{},style:'cine',shape:'auto',move:'spin',dur:15,autodur:'ai',aware:'normal',mac:'off',bmsg:'off',chainsnd:false,laugh:false,drip:false,genre:'none',htheme:'free',hend:'free',review:false,story:true,amb:'auto',trans:'auto',subs:'white',subsz:'38',tod:'auto',lens:'auto',hand:'auto',flick:'off',scare:'off',heart:false,vhs:false,stalk:'off',gore:'off',steps:'off',whisp:'off',torch:'off',tsize:'normal',tpl:'off',cam:'off',nights:'3',frz:'off',fzs:'tone',eyes:'off',creak:'off',breath:false,tick:false,thick:false,zoom:'off',tilt:'off',wake:'03:33',cred:false,dir:'',music:'auto',vol:60,look:'auto',bars:'none',vig:true,grain:true,blur:false,fx:'auto',res:'720',fps:'30',hush:false,riser:false,blackout:'off',rtitle:false,hbeat:'free',hext:'off',hthr:'free',hvic:'free',hshow:'free',gx:'off',gy:'off',life:'normal',beast:'both',env:true,atk:true,cmode:'off',view:'off',stat:'off',subl:false,card:'off',endc:false,drone:'off',musicbox:false,knock:false,auth:'Authorization: Bearer {key}',body:'{"prompt":"{prompt}"}'};
 let cfg=(()=>{try{return Object.assign({},D,JSON.parse(localStorage.getItem('v3d')||'{}'))}catch(e){return{...D}}})();
 const save=()=>{try{localStorage.setItem('v3d',JSON.stringify(cfg))}catch(e){}};
 
@@ -24,7 +24,7 @@ function fill(){
   $('#modelL').textContent=d.ml||'Modelo';
   $('#modelH').textContent=d.mh||'';
   if(d.link)$('#keyHelp').href=d.link;
-  ['style','shape','move','dur','autodur','aware','mac','bmsg','chainsnd','laugh','drip','lids','auth','body','url','genre','htheme','hend','review','story','amb','trans','subs','subsz','tod','lens','hand','flick','scare','heart','vhs','stalk','gore','lensblood','steps','whisp','torch','tsize','tpl','cam','nights','frz','fzs','eyes','creak','breath','tick','thick','zoom','tilt','wake','cred','dir','music','vol','look','bars','vig','grain','blur','fx','res','fps','pov','povlook','povbob','povhands','povgore','hush','riser','blackout','hbvig','sanity','rtitle','hbeat','hext','hthr','hvic','hshow','gx','gy','life','beast','env','atk','cmode','view','stat','subl','card','endc','drone','musicbox','knock'].forEach(k=>{const e=$('#'+k);if(e.type==='checkbox')e.checked=!!cfg[k];else e.value=cfg[k]});
+  ['style','shape','move','dur','autodur','aware','mac','bmsg','chainsnd','laugh','drip','auth','body','url','genre','htheme','hend','review','story','amb','trans','subs','subsz','tod','lens','hand','flick','scare','heart','vhs','stalk','gore','steps','whisp','torch','tsize','tpl','cam','nights','frz','fzs','eyes','creak','breath','tick','thick','zoom','tilt','wake','cred','dir','music','vol','look','bars','vig','grain','blur','fx','res','fps','hush','riser','blackout','rtitle','hbeat','hext','hthr','hvic','hshow','gx','gy','life','beast','env','atk','cmode','view','stat','subl','card','endc','drone','musicbox','knock'].filter(k=>$('#'+k)).forEach(k=>{const e=$('#'+k);if(e.type==='checkbox')e.checked=!!cfg[k];else e.value=cfg[k]});
   const tags=[p,d.link?'link':'',p==='local'||d.llm?'render':'',p!=='local'?'key':'',d.llm?'llm':'',d.video?'video':'',CAN.includes(p)?'list':''];
   document.querySelectorAll('[data-p]').forEach(e=>e.hidden=!e.dataset.p.split(' ').some(t=>tags.includes(t)));
   $('#loadH').textContent='';$('#mq').value='';drawList();
@@ -44,18 +44,17 @@ $('#menu').addEventListener('input',e=>{
 const menu=$('#menu'),shade=$('#shade');
 const setMenu=o=>{menu.classList.toggle('open',o);shade.hidden=!o;(o?$('#prov'):$('#open')).focus()};
 $('#open').onclick=()=>setMenu(true);
-const HB={mac:'off',bmsg:'off',chainsnd:false,laugh:false,drip:false,lids:false,flick:'off',scare:'off',heart:false,vhs:false,stalk:'off',gore:'off',lensblood:false,steps:'off',whisp:'off',torch:'off',tsize:'normal',pov:'off',povlook:'glance',povbob:'walk',povhands:false,povgore:false,hush:false,riser:false,blackout:'off',hbvig:false,sanity:false,rtitle:false,hbeat:'free',hext:'off',hthr:'free',hvic:'free',hshow:'free',gx:'off',gy:'off',cmode:'off',view:'off',stat:'off',subl:false,card:'off',endc:false,drone:'off',musicbox:false,knock:false};
+const HB={mac:'off',bmsg:'off',chainsnd:false,laugh:false,drip:false,flick:'off',scare:'off',heart:false,vhs:false,stalk:'off',gore:'off',steps:'off',whisp:'off',torch:'off',tsize:'normal',hush:false,riser:false,blackout:'off',rtitle:false,hbeat:'free',hext:'off',hthr:'free',hvic:'free',hshow:'free',gx:'off',gy:'off',cmode:'off',view:'off',stat:'off',subl:false,card:'off',endc:false,drone:'off',musicbox:false,knock:false,creak:'off',eyes:'off',breath:false,tick:false,thick:false,zoom:'off',tilt:'off',tpl:'off',cam:'off',nights:'3',frz:'off',fzs:'tone',wake:'03:33'};
 const PRE={
-  gothic:{...HB,musicbox:true,card:'warn',genre:'horror',dur:30,story:true,look:'cold',music:'mystery',tod:'night',fx:'mist',amb:'wind',trans:'fade',hand:'steady',lens:'normal',bars:'2.39',vig:true,grain:true,fps:'24',flick:'soft',scare:'end',stalk:'ghost',steps:'slow',whisp:'far'},
-  slasher:{...HB,genre:'horror',dur:30,story:true,look:'horror',music:'tense',tod:'night',fx:'rain',amb:'rain',trans:'cut',hand:'handheld',lens:'wide',bars:'1.85',vig:true,grain:true,fps:'24',flick:'hard',scare:'mid',heart:true,stalk:'monster',gore:'lots',lensblood:true,steps:'near'},
-  found:{...HB,view:'cam',stat:'some',card:'found',endc:true,knock:true,genre:'horror',dur:30,story:true,look:'noir',music:'none',tod:'night',fx:'none',amb:'night',trans:'cut',hand:'handheld',lens:'wide',bars:'none',vig:true,grain:true,fps:'30',subs:'off',flick:'hard',scare:'end',heart:true,vhs:true,gore:'some',steps:'near',whisp:'close',torch:'shaky',tsize:'narrow'},
-  pov:{...HB,knock:true,drone:'hum',stat:'some',genre:'horror',dur:40,story:true,look:'horror',music:'tense',tod:'night',fx:'mist',amb:'wind',trans:'cut',hand:'handheld',lens:'wide',bars:'2.39',vig:true,grain:true,fps:'30',subs:'off',flick:'soft',scare:'end',heart:true,steps:'slow',whisp:'far',torch:'shaky',tsize:'normal',stalk:'ghost',creak:'rare',breath:true,eyes:'few',pov:'on',povlook:'glance',povbob:'walk',povhands:true,hush:true,riser:true,hbvig:true,sanity:true,rtitle:true,blackout:'mid'},
-  off:{...HB,genre:'none'}
+  day:{...HB,genre:'none',look:'natural',music:'calm',tod:'noon',fx:'none',amb:'wind',trans:'cut',hand:'steady',lens:'normal',bars:'none',fps:'30',dur:20,story:true},
+  night:{...HB,genre:'drama',look:'cold',music:'calm',tod:'night',fx:'none',amb:'night',trans:'fade',hand:'steady',lens:'normal',bars:'2.39',fps:'24',dur:25,story:true},
+  action:{...HB,genre:'action',look:'cold',music:'epic',tod:'sunset',fx:'dust',amb:'wind',trans:'cut',hand:'handheld',lens:'wide',bars:'2.39',fps:'24',dur:20,story:true},
+  romance:{...HB,genre:'romance',look:'warm',music:'calm',tod:'sunset',fx:'embers',amb:'sea',trans:'fade',hand:'steady',lens:'normal',bars:'none',fps:'24',dur:25,story:true},
+  comedy:{...HB,genre:'comedy',look:'natural',music:'joy',tod:'noon',fx:'none',amb:'none',trans:'wipe',hand:'steady',lens:'normal',bars:'none',fps:'30',dur:20,story:true},
+  kids:{...HB,genre:'kids',look:'warm',music:'calm',tod:'dawn',fx:'none',amb:'wind',trans:'fade',hand:'steady',lens:'normal',bars:'none',fps:'30',dur:20,story:true},
+  scifi:{...HB,genre:'scifi',look:'neon',music:'tense',tod:'night',fx:'none',amb:'none',trans:'wipe',hand:'handheld',lens:'wide',bars:'2.39',fps:'24',dur:25,story:true},
+  docu:{...HB,genre:'documentary',look:'natural',music:'none',tod:'noon',fx:'none',amb:'wind',trans:'cut',hand:'steady',lens:'normal',bars:'none',fps:'30',dur:25,story:true}
 };
-const PN={pov:'Primera persona: explorador',gothic:'Gótico clásico',slasher:'Slasher',found:'Metraje encontrado',off:'Terror apagado'};
-const P333=()=>({...HB,tpl:'bedroom',cam:'lapse',nights:'3',frz:'1',fzs:'tone',look:'nightcam',music:'none',amb:'none',fx:'none',vhs:true,grain:true,vig:true,blur:false,hand:'steady',bars:'none',subs:'off',trans:'cut',dur:30,fps:'30',res:'720'});
-$('#prep333').onclick=()=>{Object.assign(cfg,P333());save();fill();setMenu(false);say('Corto 3:33 preparado. Pulsa «Generar video».')};
-$('#applyPreset').onclick=()=>{const k=$('#preset').value;Object.assign(cfg,PRE[k]);save();fill();$('#presetH').textContent='Aplicado: '+PN[k]+'. Revisa las herramientas de abajo y cambia lo que quieras.'};
 $('#close').onclick=shade.onclick=()=>setMenu(false);
 addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open'))setMenu(false)});
 
@@ -136,7 +135,7 @@ function sfxPlay(ac,out,id,when,vol){const b=SFXB[id];if(!b)return;const s=ac.cr
 const sys=()=>`Eres un director de cine 3D con oficio. Pones en escena una película de ${cfg.dur} segundos que cuenta una historia con sentido: cada movimiento tiene un motivo y cada plano muestra lo que importa en ese momento. Responde SOLO con un objeto JSON válido, sin texto adicional ni markdown.
 
 FORMATO:
-{"title":"título breve","look":"natural|warm|cold|noir|vintage|neon|horror","music":"epic|calm|mystery|joy|tense|dread|choir|lullaby","cast":{"hero":{"asset":"robot","color":"#hex","color2":"#hex","scale":1}},"scenes":[{"weather":"none|rain|snow|fireflies|mist|dust|embers","background":"#hex","fog":{"color":"#hex","near":5,"far":30},"ambient":0.5,"sun":{"color":"#hex","intensity":1,"pos":[4,6,5]},"lights":[{"type":"point|spot","color":"#hex","pos":[x,y,z],"intensity":1,"look":[x,y,z]}],"objects":[OBJ,...],"shots":[{"dur":3,"camera":CAM,"caption":"subtítulo breve","transition":"cut|fade","sfx":[{"id":"id_de_la_lista","at":0.5,"vol":0.6}]}]}]}\n\nSONIDOS (efectos opcionales): cada plano puede llevar "sfx":[{"id":"id_de_la_lista","at":0.5,"vol":0.6}] con hasta 2 efectos. "at" son segundos desde el inicio de ese plano, en el momento exacto de la acción (el golpe, el arañazo, la aparición). "vol" va de 0 a 1. Usa solo estos ids:${sfxTxt()}\nREGLAS DE SONIDO: pon sonido solo donde refuerce lo que se ve, no en cada plano. Los efectos de gore (crujido_huesos, desgarro_piel, gorgoteo_corte, goteo_sangre) solo si la historia tiene violencia y el tono lo permite; nunca en comedias, películas familiares o escenas tiernas. Para un susto (silencio_golpe), pon "at" 2 segundos antes del momento en que aparece algo, porque el golpe llega a los 2 s del sonido. El drone y la campana sirven de ambiente en planos largos; el latido, para tensión creciente antes de un peligro. No repitas el mismo efecto en planos seguidos.
+{"title":"título breve","look":"natural|warm|cold|noir|vintage|neon","music":"epic|calm|mystery|joy|tense|dread|choir|lullaby","cast":{"hero":{"asset":"robot","color":"#hex","color2":"#hex","scale":1}},"scenes":[{"weather":"none|rain|snow|fireflies|mist|dust|embers","background":"#hex","fog":{"color":"#hex","near":5,"far":30},"ambient":0.5,"sun":{"color":"#hex","intensity":1,"pos":[4,6,5]},"lights":[{"type":"point|spot","color":"#hex","pos":[x,y,z],"intensity":1,"look":[x,y,z]}],"objects":[OBJ,...],"shots":[{"dur":3,"camera":CAM,"caption":"subtítulo breve","transition":"cut|fade","sfx":[{"id":"id_de_la_lista","at":0.5,"vol":0.6}]}]}]}\n\nSONIDOS (efectos opcionales): cada plano puede llevar "sfx":[{"id":"id_de_la_lista","at":0.5,"vol":0.6}] con hasta 2 efectos. "at" son segundos desde el inicio de ese plano, en el momento exacto de la acción (el golpe, el arañazo, la aparición). "vol" va de 0 a 1. Usa solo estos ids:${sfxTxt()}\nREGLAS DE SONIDO: pon sonido solo donde refuerce lo que se ve, no en cada plano. Los efectos de gore (crujido_huesos, desgarro_piel, gorgoteo_corte, goteo_sangre) solo si la historia tiene violencia y el tono lo permite; nunca en comedias, películas familiares o escenas tiernas. Para un susto (silencio_golpe), pon "at" 2 segundos antes del momento en que aparece algo, porque el golpe llega a los 2 s del sonido. El drone y la campana sirven de ambiente en planos largos; el latido, para tensión creciente antes de un peligro. No repitas el mismo efecto en planos seguidos.
 
 OBJ: {"shape":"box|sphere|cone|cylinder|torus|knot|ico|plane|pyramid|dome|tetra|octa|dodeca|ring|gut|limb|carbody|taper|capsule|lump|rock|wedge|vase|tube|bone|arch|stairs","color":"#hex","pos":[x,y,z],"scale":[x,y,z],"rot":[gradosX,gradosY,gradosZ],"anim":"spin|bounce|float|orbit|walk|sway|pulse|turn|swing|swing2|roll|shiver|breathe|twitch|writhe|chant|pendulum|lean|shake|kneel|crawl|stagger|hunch|flinch|none","speed":1,"metal":0.3,"rough":0.4,"glow":0,"opacity":1,"path":[[x,y,z],...],"face":true}
 - Cada forma mide 1 unidad antes de escalarla. "scale" puede ser un número (escala uniforme).
@@ -149,7 +148,7 @@ OBJ: {"shape":"box|sphere|cone|cylinder|torus|knot|ico|plane|pyramid|dome|tetra|
 
 ASSETS PREARMADOS: son personajes y objetos ya modelados y animados. Úsalos en "objects" en vez de armarlos a mano:
 {"asset":"robot","color":"#hex","color2":"#hex","pos":[x,y,z],"scale":1,"rot":[0,gradosY,0],"speed":1,"path":[[x,y,z],...],"face":true,"act":"wave"}
-Catálogo (todos apoyan la base en y=0 y miran hacia +z; entre paréntesis la altura aproximada): robot (3), person (2), dog (1.3), bird (0.5; se coloca en el aire), tree (3.4), pine (3.8), flower (0.9), rock (0.8), cloud (1.5; se coloca en el aire), mountain (5; base de 8x8), house (3.5), car (1.4; largo 3.6), boat (3.2), rocket (3.5), lamp (3.4), ghost (2.5; flota y es translúcido), monster (4.2; brazos largos y ojos rojos), grave (1.9), deadtree (3.8), mansion (7.4; ancho 5), puddle (charco plano de 1.8; con "color" sirve para otros líquidos), trail (rastro de gotas y manchas de 5 de largo; gíralo con "rot" para que lleve a un lugar), bed (cama de 2.2 por 3.2; la cabecera está hacia -z). Gore: viscera (pila de vísceras húmedas de 1 de alto; color2 para otro tejido), carcass (res abierta con costillas en el suelo, 1.2 de alto), hanged (cuerpo colgado de una viga, 3.2 de alto), limb (brazo cercenado en un charco, 1 de largo), dolls (tres muñecas de porcelana ahorcadas del techo que se mecen, una con ojo rojo, 3.5 de alto), wallfaces (muro del que surgen cuatro rostros gritando con la mandíbula abierta, 2.6 de alto), eyewall (muro cubierto de ojos que parpadean, 2.6 de alto), mirror (espejo agrietado con una silueta de ojos rojos y una mano sangrienta, 2.1 de alto), eyetree (árbol muerto con ojos que parpadean y una boca de dientes que gotea, 3.8 de alto), crows (poste con un cuerpo atado y cuervos picoteándolo, 2.2 de alto), saltcircle (círculo de sal con runas de sangre, velas negras y una calavera en el centro, 3.2 de ancho), guillotine (guillotina con la cuchilla en alto, ensangrentada y una cabeza en la cesta, 3.7 de alto), gallows (horca con trampilla, escalones y una soga con nudo que se mece, 4.1 de alto), ironmaiden (dama de hierro abierta con púas por dentro y sangre en el suelo, 2.2 de alto), operating (mesa de operaciones con un cuerpo bajo una sábana sangrienta, lámpara y bandeja con sierra y bisturís, 3.3 de alto), stakes (cuatro estacas con calaveras empaladas y sangre, 3.2 de alto), well (pozo con manos pálidas aferradas al borde y ojos rojos en el fondo, 3.2 de alto), skullpile (pila de calaveras y huesos sobre un charco, 0.7 de alto), chains (cadenas con grilletes ensangrentados que cuelgan de una viga y se mecen, 3 de alto), cobweb (telaraña grande con una araña, para esquinas, 2 de alto), rats (cuatro ratas royendo carne en un charco, 0.3 de alto), bloodwall (muro con manos ensangrentadas y churretes, 2.6 de alto), cage (jaula colgante con una calavera dentro que se mece, 3.5 de alto), jars (estantería con frascos de ojos, cerebros y dientes en líquido verde, 1.7 de alto), head (cabeza cortada en el suelo con sangre, 0.6 de alto), wreck (coche destrozado y ensangrentado de 1.5 de alto con charco, ideal en carreteras y bosques), field (campo de trigo o maíz de 8 por 10 con tallos de 1.8; úsalo como escondite o para el ataque), barn (granero rojo de 4 de ancho con puerta, 4.5 de alto, con charco en la entrada). Terror: clown (2.7), doll (1.6; cabeza que se inclina), spider (1.3; 3 de ancho con patas), skeleton (2.3), scarecrow (3.6), slender (4.3; hombre altísimo sin rostro), zombie (2.5; brazos al frente), plague (2.3; doctor de la peste con máscara de pico, abrigo largo, farol verde y sierra ensangrentada; verdugo silencioso, camina deslizándose; úsalo como asesino, médico de epidemias o jefe de rituales), cultist (1.9; encapuchado con túnica; camina y levanta un cuchillo o una vela; úsalo en grupo para rituales), altar (altar de piedra de 2.4 de largo con velas y sangre; úsalo para sacrificios), tentacle (4.2; tentáculos que se retuercen desde el suelo), pentagram (símbolo rojo brillante plano de 3.2), coffin (ataúd entreabierto de 2.1 de largo con una mano), pumpkin (1.1; calabaza con luz), candle (0.9), door (puerta con marco de 2.6 de alto y 1.4 de ancho; se abre sola cuando un personaje se acerca; gírala con "rot" para colocarla en una pared), bat (0.4; murciélago que bate las alas, se coloca en el aire; con "anim":"orbit" gira sobre la escena). clown, skeleton, slender, zombie y plague caminan por un path como person.
+Catálogo (todos apoyan la base en y=0 y miran hacia +z; entre paréntesis la altura aproximada): robot (3), person (2), dog (1.3), bird (0.5; se coloca en el aire), tree (3.4), pine (3.8), flower (0.9), rock (0.8), cloud (1.5; se coloca en el aire), mountain (5; base de 8x8), house (3.5), car (1.4; largo 3.6), boat (3.2), rocket (3.5), lamp (3.4), ghost (2.5; flota y es translúcido), monster (4.2; brazos largos y ojos rojos), grave (1.9), deadtree (3.8), mansion (7.4; ancho 5), puddle (charco plano de 1.8; con "color" sirve para otros líquidos), trail (rastro de gotas y manchas de 5 de largo; gíralo con "rot" para que lleve a un lugar), bed (cama de 2.2 por 3.2; la cabecera está hacia -z). Gore: viscera (pila de vísceras húmedas de 1 de alto; color2 para otro tejido), carcass (res abierta con costillas en el suelo, 1.2 de alto), hanged (cuerpo colgado de una viga, 3.2 de alto), limb (brazo cercenado en un charco, 1 de largo), dolls (tres muñecas de porcelana ahorcadas del techo que se mecen, una con ojo rojo, 3.5 de alto), wallfaces (muro del que surgen cuatro rostros gritando con la mandíbula abierta, 2.6 de alto), eyewall (muro cubierto de ojos que parpadean, 2.6 de alto), mirror (espejo agrietado con una silueta de ojos rojos y una mano sangrienta, 2.1 de alto), eyetree (árbol muerto con ojos que parpadean y una boca de dientes que gotea, 3.8 de alto), crows (poste con un cuerpo atado y cuervos picoteándolo, 2.2 de alto), saltcircle (círculo de sal con runas de sangre, velas negras y una calavera en el centro, 3.2 de ancho), guillotine (guillotina con la cuchilla en alto, ensangrentada y una cabeza en la cesta, 3.7 de alto), gallows (horca con trampilla, escalones y una soga con nudo que se mece, 4.1 de alto), ironmaiden (dama de hierro abierta con púas por dentro y sangre en el suelo, 2.2 de alto), operating (mesa de operaciones con un cuerpo bajo una sábana sangrienta, lámpara y bandeja con sierra y bisturís, 3.3 de alto), stakes (cuatro estacas con calaveras empaladas y sangre, 3.2 de alto), well (pozo con manos pálidas aferradas al borde y ojos rojos en el fondo, 3.2 de alto), skullpile (pila de calaveras y huesos sobre un charco, 0.7 de alto), chains (cadenas con grilletes ensangrentados que cuelgan de una viga y se mecen, 3 de alto), cobweb (telaraña grande con una araña, para esquinas, 2 de alto), rats (cuatro ratas royendo carne en un charco, 0.3 de alto), bloodwall (muro con manos ensangrentadas y churretes, 2.6 de alto), cage (jaula colgante con una calavera dentro que se mece, 3.5 de alto), jars (estantería con frascos de ojos, cerebros y dientes en líquido verde, 1.7 de alto), head (cabeza cortada en el suelo con sangre, 0.6 de alto), wreck (coche destrozado y ensangrentado de 1.5 de alto con charco, ideal en carreteras y bosques), field (campo de trigo o maíz de 8 por 10 con tallos de 1.8; úsalo como escondite o para el ataque), barn (granero rojo de 4 de ancho con puerta, 4.5 de alto, con charco en la entrada). Modelos 3D: b2 = 2B, estático (se desplaza entero, sin piernas), altura 1.7; mx = personaje humanoide con esqueleto y clip de caminar (las piernas se mueven, el desplazamiento lo decide la escena), altura 1.75. Criaturas: clown (2.7), doll (1.6; cabeza que se inclina), spider (1.3; 3 de ancho con patas), skeleton (2.3), scarecrow (3.6), slender (4.3; hombre altísimo sin rostro), zombie (2.5; brazos al frente), plague (2.3; doctor de la peste con máscara de pico, abrigo largo, farol verde y sierra ensangrentada; verdugo silencioso, camina deslizándose; úsalo como asesino, médico de epidemias o jefe de rituales), cultist (1.9; encapuchado con túnica; camina y levanta un cuchillo o una vela; úsalo en grupo para rituales), altar (altar de piedra de 2.4 de largo con velas y sangre; úsalo para sacrificios), tentacle (4.2; tentáculos que se retuercen desde el suelo), pentagram (símbolo rojo brillante plano de 3.2), coffin (ataúd entreabierto de 2.1 de largo con una mano), pumpkin (1.1; calabaza con luz), candle (0.9), door (puerta con marco de 2.6 de alto y 1.4 de ancho; se abre sola cuando un personaje se acerca; gírala con "rot" para colocarla en una pared), bat (0.4; murciélago que bate las alas, se coloca en el aire; con "anim":"orbit" gira sobre la escena). clown, skeleton, slender, zombie y plague caminan por un path como person.
 - "color" es el color principal y "color2" el secundario (pantalón, techo, acento...). Si los omites usan colores propios.
 - Si un asset avanza por un "path", robot, person y dog mueven brazos y piernas solos, car gira las ruedas y rocket enciende su llama. No hace falta poner "anim". Con "face":true miran hacia donde van.
 - "act":"wave" hace que robot y person saluden. "act":"idle" deja quieto a un personaje o posa al bird (el bird bate las alas por defecto).
@@ -160,7 +159,7 @@ PERSONAJES CON ACCIÓN (lo que da sentido a la película):
 - Un buen plan del protagonista tiene entre 6 y 12 pasos, con al menos 2 pausas de "look" o "crouch" antes de un momento tenso.
 - Define cada personaje UNA vez en "cast" con un id y úsalo en todas las escenas donde aparezca: {"cast":"hero","pos":[x,0,z],"moves":[...]}. Así conserva su aspecto y su identidad entre planos.
 - "moves" es la línea de tiempo del personaje en segundos DESDE EL INICIO DE LA ESCENA. Cada paso es {"t":segundo en que debe LLEGAR,"to":[x,y,z],"act":"wave|jump|idle|look|crouch|stab|fall|punch|beaten|brutal|horror|recoil|drag|haul|plead|sob|scream|choke|strangle|convulse|rise|possess|worship|peek|creep|limp","face":"id de otro objeto"}. Parte de "pos" en t=0. Para esperar quieto, repite la misma posición. El motor mueve piernas y brazos solo mientras camina y se detiene al llegar; no uses "path" ni "anim" en personajes con "moves".
-- "act" se ejecuta cuando llega y está quieto: "wave" saluda, "jump" salta de alegría, "look" mira a un lado y a otro (buscando peligro, sin moverse), "crouch" se agacha para esconderse, "stab" (cultist o plague) apuñala con el brazo derecho mientras está quieto, "fall" (víctima) cae al suelo y se queda tendida, "punch" da puñetazos repetidos (person, cultist o plague, mirando a la víctima con "face"), "beaten" (víctima) se sacude y encoge con cada golpe, "brutal" (víctima ya en el suelo) se sacude con violencia en cada golpe del remate, "horror" (protagonista) se queda paralizado temblando y aparta la mirada, "recoil" (protagonista) retrocede tambaleándose. MOVIMIENTOS MACABROS (se ejecutan quietos, salvo creep y limp que se usan andando): "plead" (de rodillas, suplicando con las manos juntas), "sob" (encorvado, llorando con la cara entre las manos), "scream" (echa la cabeza atrás y grita con las manos en la cabeza), "choke" (víctima agarrada por el cuello: forcejea, patalea y se va apagando; va seguido de "fall") emparejado con "strangle" (el atacante, a un metro, estrangulando con los dos brazos al frente), "convulse" (víctima ya tendida: espasmos que se van apagando), "rise" (un cuerpo tendido se incorpora a sacudidas, el muerto que despierta; va después de "fall" o "convulse"), "possess" (se queda rígido, flota un palmo y se sacude a tirones), "worship" (cultista o doctor con los brazos alzados, cantando y balanceándose), "peek" (se asoma de lado para espiar), "creep" (avanza agachado y en silencio) y "limp" (herido, se aprieta el vientre y cojea). "face" lo gira para mirar a otro personaje u objeto que tenga "id".
+- "act" se ejecuta cuando llega y está quieto: "wave" saluda, "jump" salta de alegría, "look" mira a un lado y a otro (buscando peligro, sin moverse), "crouch" se agacha para esconderse, "stab" (cultist o plague) apuñala con el brazo derecho mientras está quieto, "fall" (víctima) cae al suelo y se queda tendida, "punch" da puñetazos repetidos (person, cultist o plague, mirando a la víctima con "face"), "beaten" (víctima) se sacude y encoge con cada golpe, "brutal" (víctima ya en el suelo) se sacude con violencia en cada golpe del remate, "horror" (protagonista) se queda paralizado temblando y aparta la mirada, "recoil" (protagonista) retrocede tambaleándose. MOVIMIENTOS DE ACTUACIÓN (se ejecutan quietos, salvo creep y limp que se usan andando): "plead" (de rodillas, suplicando con las manos juntas), "sob" (encorvado, llorando con la cara entre las manos), "scream" (echa la cabeza atrás y grita con las manos en la cabeza), "choke" (víctima agarrada por el cuello: forcejea, patalea y se va apagando; va seguido de "fall") emparejado con "strangle" (el atacante, a un metro, estrangulando con los dos brazos al frente), "convulse" (víctima ya tendida: espasmos que se van apagando), "rise" (un cuerpo tendido se incorpora a sacudidas, el muerto que despierta; va después de "fall" o "convulse"), "possess" (se queda rígido, flota un palmo y se sacude a tirones), "worship" (cultista o doctor con los brazos alzados, cantando y balanceándose), "peek" (se asoma de lado para espiar), "creep" (avanza agachado y en silencio) y "limp" (herido, se aprieta el vientre y cojea). "face" lo gira para mirar a otro personaje u objeto que tenga "id".
 - Velocidad: caminar 1.5 unidades/s, correr 3, vehículos 4. Calcula t = distancia / velocidad. Al correr (3/s) las piernas se mueven el doble de rápido, así que el movimiento se ve como carrera.
 - El decorado (árboles, casas, rocas, farolas) no se mueve. Solo se animan como ambiente nubes, pájaros, llamas y luces.
 
@@ -179,7 +178,7 @@ REGLAS DE DIRECCIÓN:
 - Cada escena con 10 a 40 objetos (cada asset cuenta como uno). El decorado cuenta algo: el camino, la meta, el obstáculo. Todo dentro de ±10 unidades; las montañas de fondo pueden llegar a ±20.
 - Subtítulos cortos que refuercen lo que se ve sin repetirlo.
 - Elige "look" y "music" según el género y el ánimo. Usa "weather" cuando la historia lo pida.
-- JSON compacto, sin comentarios.${cfg.pov==='live'?liveTxt:cfg.pov!=='off'?povTxt:''}${GEN[cfg.genre]?'\n- GÉNERO: '+GEN[cfg.genre].p+' Respeta este estilo en luces, cámara, colores y ritmo.':''}${cfg.genre==='horror'?HK+htools():''}${BTXT()}${ENVTXT}${cfg.atk?ATXT:''}
+- JSON compacto, sin comentarios.${GEN[cfg.genre]?'\n- GÉNERO: '+GEN[cfg.genre].p+' Respeta este estilo en luces, cámara, colores y ritmo.':''}${BTXT()}${ENVTXT}${cfg.atk?ATXT:''}
 - Si el mensaje trae una PELÍCULA ACTUAL en JSON, devuelve la película completa en el mismo formato con los cambios pedidos y conserva todo lo demás.`;
 
 const SH={box:()=>new THREE.BoxGeometry(1,1,1),sphere:()=>new THREE.SphereGeometry(.5,56,40),cone:()=>new THREE.ConeGeometry(.5,1,32),cylinder:()=>new THREE.CylinderGeometry(.5,.5,1,48),torus:()=>new THREE.TorusGeometry(.5,.2,24,72),knot:()=>new THREE.TorusKnotGeometry(.4,.14,120,16),ico:()=>new THREE.IcosahedronGeometry(.6,0),plane:()=>new THREE.PlaneGeometry(1,1),
@@ -219,6 +218,8 @@ const mv=o=>!!(o.path||o.to||o.moves||o.act==='drive'||o.act==='fly');
 const wk=o=>o.act==='walk'||o.anim==='walk'||(o.act!=='idle'&&o.act!=='wave'&&!!(o.path||o.to||o.moves));
 const M0={metal:0,rough:.85};
 const LIB={
+  b2:()=>[],
+  mx:()=>[],
   robot:o=>{
     const c=cl(o.color,'#c9ced6'),e=cl(o.color2,'#22d3ee'),k=num(o.speed,1,0,10),w=wk(o),m={metal:.7,rough:.3};
     const arm=(s,an,rot,sp)=>pv([s*.7,1.85,0],rot,an,sp||k,[bx('box',c,[0,-.45,0],[.26,.9,.26],m)]);
@@ -1269,7 +1270,7 @@ plague:o=>{
       head,arm(1,'vArmB',saw),arm(-1,o.moves?'larm':'vArmA',lantern)])];
 }
 });
-const LS={guillotine:.85,gallows:.7,ironmaiden:1,operating:1,stakes:.8,well:1.1,dolls:1.1,wallfaces:.9,eyewall:.9,mirror:1.2,eyetree:.7,crows:1.1,saltcircle:1.2,skullpile:1.8,chains:1.2,cobweb:1.4,rats:3,bloodwall:.9,cage:1,jars:1.2,plague:1.3,bat:3,clown:1.3,doll:2.2,spider:2.2,skeleton:1.3,scarecrow:.8,slender:.65,zombie:1.3,tentacle:.8,pentagram:1.2,coffin:1.3,pumpkin:2.5,candle:3.5,robot:1.05,person:1.55,dog:2.8,bird:3.2,tree:.85,pine:.8,flower:3.6,rock:2.4,cloud:2,mountain:.65,house:.85,car:1.3,boat:1,rocket:.85,lamp:.95,ghost:1.4,monster:.8,grave:2.4,deadtree:.9,mansion:.5,puddle:2,trail:.8,bed:.9};
+const LS={b2:1,mx:1,guillotine:.85,gallows:.7,ironmaiden:1,operating:1,stakes:.8,well:1.1,dolls:1.1,wallfaces:.9,eyewall:.9,mirror:1.2,eyetree:.7,crows:1.1,saltcircle:1.2,skullpile:1.8,chains:1.2,cobweb:1.4,rats:3,bloodwall:.9,cage:1,jars:1.2,plague:1.3,bat:3,clown:1.3,doll:2.2,spider:2.2,skeleton:1.3,scarecrow:.8,slender:.65,zombie:1.3,tentacle:.8,pentagram:1.2,coffin:1.3,pumpkin:2.5,candle:3.5,robot:1.05,person:1.55,dog:2.8,bird:3.2,tree:.85,pine:.8,flower:3.6,rock:2.4,cloud:2,mountain:.65,house:.85,car:1.3,boat:1,rocket:.85,lamp:.95,ghost:1.4,monster:.8,grave:2.4,deadtree:.9,mansion:.5,puddle:2,trail:.8,bed:.9};
 LIB.hanged=o=>{
   const c=cl(o.color,'#3a2a2a'),sk='#8a7a6a',M=M0;
   return[
@@ -1404,7 +1405,7 @@ function localSpec(txt){
 }
 
 const storySys=()=>`Eres guionista de cine corto. Con la idea del usuario escribe una historia con sentido para una película 3D de ${cfg.dur} segundos. Responde SOLO con JSON válido:
-{"title":"","logline":"la historia en una frase","cast":[{"id":"hero","name":"","asset":"robot|person|dog|bird|car|boat|rocket|ghost|monster${cfg.genre==='horror'?'|clown|doll|spider|skeleton|scarecrow|slender|zombie|tentacle|plague':''}","want":"qué quiere conseguir","look":"colores y aspecto"}],"places":["lugares"],"beats":[{"scene":1,"what":"qué ocurre, con acciones simples y visibles","why":"causa o emoción","shot":"wide|medium|close","caption":"subtítulo corto","actuar":"qué siente y qué hace el cuerpo: mirar alrededor, dudar, agacharse, correr, huir"}]}
+{"title":"","logline":"la historia en una frase","cast":[{"id":"hero","name":"","asset":"robot|person|dog|bird|car|boat|rocket|ghost|monster","want":"qué quiere conseguir","look":"colores y aspecto"}],"places":["lugares"],"beats":[{"scene":1,"what":"qué ocurre, con acciones simples y visibles","why":"causa o emoción","shot":"wide|medium|close","caption":"subtítulo corto","actuar":"qué siente y qué hace el cuerpo: mirar alrededor, dudar, agacharse, correr, huir"}]}
 REGLAS: estructura en tres actos: presentación (quién y dónde), conflicto (un obstáculo o un deseo que se complica) y resolución (cómo termina, con un final claro). Cada momento nace del anterior por causa y efecto. El protagonista quiere algo concreto y actúa para lograrlo. Cada beat describe una acción que se pueda ver: ir hacia, llegar, saludar, mirar, saltar, esconderse, volver. Entre 4 y 8 beats en 1 a 3 escenas (lugares). Solo los tipos de personaje indicados. ACTUACIÓN: el protagonista actúa como en cine: antes de avanzar mira alrededor, se oculta si hay peligro, huye en cuanto ve la amenaza y se detiene a comprobar si lo siguen. Cada beat incluye en "actuar" lo que siente y cómo lo muestra el cuerpo. Nada de pensamientos ni acciones que no se vean.${GEN[cfg.genre]?' GÉNERO: '+(GEN[cfg.genre].s||GEN[cfg.genre].p):''}`;
 async function ask(p,key,model,system,user){
   let r;
@@ -1742,7 +1743,7 @@ function sfxHit(ac,out,vol){
   b.buffer=sfxN(ac,.2);f.type='lowpass';f.frequency.value=900;h.gain.setValueAtTime(vol*.9,s);h.gain.exponentialRampToValueAtTime(.0001,s+.18);
   b.connect(f);f.connect(h);h.connect(out);b.start(s);
 }
-const sfx=(fn,x,z,v,k)=>{try{const ac=LV.ac;if(!ac||ac.state==='closed'||!LV.dst)return;fn(ac,LV.dst,Math.max(.12,1-Math.hypot(x-CAMV.x,z-CAMV.z)/26)*v,k)}catch(e){}};
+const sfx=(fn,x,z,v,k)=>{try{const ac=AV.ac;if(!ac||ac.state==='closed'||!AV.dst)return;fn(ac,AV.dst,Math.max(.12,1-Math.hypot(x-CAMV.x,z-CAMV.z)/26)*v,k)}catch(e){}};
 let HITS=0;
 const ATK={plague:[2.3,1.0,0,.1],cultist:[2.2,1.0,0,.1],monster:[3.2,1.2,0,.12],zombie:[2.1,.9,0,0],skeleton:[2.2,.8,0,0],clown:[2.3,1.1,.2,.05],slender:[3.4,.7,0,0],spider:[2.4,2.2,1.1,0],doll:[1.8,1.5,.5,0],ghost:[3.2,2.6,0,.45],scarecrow:[2.2,.6,0,0],tentacle:[4,0,0,.08]};
 const ATXT='\n- COMBATE: las criaturas atacan solas cuando están cerca de un personaje (cada ataque dura 1,3 s: se agazapan, se lanzan y golpean). El personaje a veces esquiva y a veces cae hacia atrás. Acerca criatura y héroe para provocar el enfrentamiento, cámara en close o medium y deja 2 a 3 s de margen; no describas el golpe en los "moves".';
@@ -2360,9 +2361,7 @@ function pose(it,tb,sd){
   if(it.mix)it.mix.setTime(tb);
   if(it.mv)m.rotation.order='YXZ';m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.scale.set(sx,sy,sz);
 }
-const LV={k:{},st:null,t:null,m:null,x:0,z:8,yaw:Math.PI,pitch:0,ph:0,act:false,on:false,stop:false,last:0,blk:null,ac:null,dst:null};
-const LVH=matchMedia('(pointer:coarse)').matches?' · izq.: moverte, der.: mirar':' · WASD, ratón, Mayús corre, Espacio salta, Intro termina';
-const liveTxt='\n- MODO EXPLORACIÓN: el espectador camina por la escena en primera persona (teclado o dedos) y la graba; no hay protagonista ni "moves". Todo debe poder recorrerse: un camino claro desde z=8 hacia z=-8, objetos repartidos a los lados, luces que guíen y la amenaza esperando al fondo o a los lados. Usa una sola escena grande; los 3 a 5 planos solo dividen el tiempo.';
+const AV={ac:null,dst:null};
 /* ---------- Física de contacto (v5) ----------
    Un solo resolutor de choques contra los sólidos del mapa del decorado (círculos y cajas orientadas).
    - solidPush saca el cuerpo de lo que penetra por la normal más corta, así que se desliza por las paredes.
@@ -2401,103 +2400,9 @@ function groundAt(E,x,z,feet){
   return g}
 function stepSnd(ac,out,run){const s=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(100,s);o.frequency.exponentialRampToValueAtTime(42,s+.1);g.gain.setValueAtTime(run?.5:.32,s);g.gain.exponentialRampToValueAtTime(.0001,s+.16);o.connect(g);g.connect(out);o.start(s);o.stop(s+.2)}
 function thudSnd(ac,out){const s=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(75,s);o.frequency.exponentialRampToValueAtTime(34,s+.14);g.gain.setValueAtTime(.55,s);g.gain.exponentialRampToValueAtTime(.0001,s+.22);o.connect(g);g.connect(out);o.start(s);o.stop(s+.25)}
-function liveAim(cam){
-  const now=performance.now(),dt=LV.last?Math.min(.1,(now-LV.last)/1000):0;LV.last=now;
-  const k=LV.k,s=LV.st||{x:0,y:0};
-  let f=(k.w||k.arrowup?1:0)-(k.s||k.arrowdown?1:0)-s.y,r=(k.d?1:0)-(k.a?1:0)+s.x;
-  const len=Math.min(Math.hypot(f,r),LV.st?1.8:1),sp=(k.shift?3.4:1.8)*len,n=Math.hypot(f,r)||1;f/=n;r/=n;   // en diagonal con teclado ya no va más rápido
-  LV.yaw+=((k.arrowleft?1:0)-(k.arrowright?1:0))*1.8*dt;
-  const sy=Math.sin(LV.yaw),cy=Math.cos(LV.yaw),cl=v=>Math.max(-16,Math.min(16,v)),PAD=.34;
-  let vx=LV.vx||0,vz=LV.vz||0,vy=LV.vy||0,py=LV.py||0,E=null;
-  try{if(LV.blk&&LV.blk.sc&&LV.blk.sc.items)E=envMap(LV.blk.sc.items)}catch(e){}
-  let on=py<=(E?groundAt(E,LV.x,LV.z,py):0)+.002&&vy<=0;
-  // Inercia: acelera y frena con suavidad; en el aire conserva el impulso
-  const tx=(sy*f-cy*r)*sp,tz=(cy*f+sy*r)*sp,ac=1-Math.exp(-dt*(on?(sp>.05?9:13):1.4));
-  vx+=(tx-vx)*ac;vz+=(tz-vz)*ac;
-  if(on&&k[' ']&&!LV.jh){vy=4.3;on=false;LV.jh=true}
-  if(!k[' '])LV.jh=false;
-  // Choque con muros, cajas, árboles…: se desliza por la superficie en lugar de atravesarla
-  const ox=LV.x,oz=LV.z;let nx=ox+vx*dt,nz=oz+vz*dt;
-  if(E&&E.sol.length&&dt>0){
-    if(!LV.sk)LV.sk=solidInit(E,ox,oz,PAD);
-    const q=solidPush(E,nx,nz,py,PAD,LV.sk);nx=q[0];nz=q[1]}
-  LV.x=cl(nx);LV.z=cl(nz);
-  if(dt>0){vx=(LV.x-ox)/dt;vz=(LV.z-oz)/dt}   // la velocidad real: lo que el muro frena, se pierde
-  // Gravedad (9.8 m/s²), aterrizaje sobre el suelo o sobre una caja baja
-  vy-=9.8*dt;py+=vy*dt;
-  const gd=E?groundAt(E,LV.x,LV.z,py):0;let hit=0;
-  if(py<=gd){if(vy<-1.8)hit=-vy;py=gd;vy=0}
-  if(hit>0){LV.dv=-hit*.28;if(LV.on&&LV.ac&&LV.dst)try{thudSnd(LV.ac,LV.dst)}catch(e){}}
-  LV.vx=vx;LV.vz=vz;LV.vy=vy;LV.py=py;
-  const hv=Math.hypot(vx,vz),mv=hv>.25,run=hv>2.6,gr=py<=gd+.002;
-  // La cabeza cuelga de un muelle amortiguado: absorbe el golpe del aterrizaje
-  let dv=LV.dv||0;dv+=(-110*(LV.dp||0)-12*dv)*dt;LV.dp=Math.max(-.25,Math.min(.1,(LV.dp||0)+dv*dt));LV.dv=dv;
-  if(mv&&gr){const p0=LV.ph;LV.ph+=hv*dt*3.2;if(Math.floor(LV.ph/Math.PI)!==Math.floor(p0/Math.PI)&&LV.on&&LV.ac&&LV.dst)try{stepSnd(LV.ac,LV.dst,run)}catch(e){}}
-  const amp=gr?.02+.07*Math.min(1,hv/3.4):0,y=1.7+py+(mv?Math.sin(LV.ph)*amp:Math.sin(now/1000*1.3)*.008)+LV.dp,cp=Math.cos(LV.pitch);
-  cam.position.set(LV.x,y,LV.z);cam.lookAt(LV.x+sy*cp*5,y+Math.sin(LV.pitch)*5,LV.z+cy*cp*5);
-  if(mv&&gr)cam.rotateZ(Math.cos(LV.ph)*.012);
-  cam.rotateZ(-(vz*sy-vx*cy)*.004);   // se ladea un poco al desplazarse de lado
-  const kk=Math.min(1,Math.max(0,(hv-1.8)/1.6))*5;LV.fk=(LV.fk||0)+(kk-(LV.fk||0))*Math.min(1,dt*6);   // al correr se abre el campo de visión
-  const fv=(LENS[cfg.lens]||72)+LV.fk;if(Math.abs(cam.fov-fv)>.01){cam.fov=fv;cam.updateProjectionMatrix()}
-}
-addEventListener('keydown',e=>{if(!LV.act)return;const q=e.key.toLowerCase();LV.k[q]=true;if(q==='enter'&&LV.on)LV.stop=true;if(q.startsWith('arrow')||q===' ')e.preventDefault()});
-addEventListener('keyup',e=>{LV.k[e.key.toLowerCase()]=false});
-const lk=(dx,dy,g)=>{LV.yaw-=dx*g;LV.pitch=Math.max(-1.2,Math.min(1.2,LV.pitch-dy*g))};
-stage.addEventListener('pointerdown',e=>{
-  if(!LV.act||e.target.closest('#lvstop'))return;if(LV.on&&LV.ac)LV.ac.resume();
-  if(e.pointerType==='mouse'){try{stage.requestPointerLock()}catch(x){}LV.m={x:e.clientX,y:e.clientY};return}
-  const R=stage.getBoundingClientRect();(LV.t||(LV.t={}))[e.pointerId]={left:e.clientX<R.left+R.width/2,x:e.clientX,y:e.clientY,ox:e.clientX,oy:e.clientY};
-  try{stage.setPointerCapture(e.pointerId)}catch(x){}
-});
-stage.addEventListener('pointermove',e=>{
-  if(!LV.act)return;
-  if(e.pointerType==='mouse'){if(document.pointerLockElement===stage)lk(e.movementX,e.movementY,.0025);else if(LV.m&&e.buttons){lk(e.clientX-LV.m.x,e.clientY-LV.m.y,.004);LV.m={x:e.clientX,y:e.clientY}}return}
-  const q=LV.t&&LV.t[e.pointerId];if(!q)return;
-  if(q.left)LV.st={x:(e.clientX-q.ox)/70,y:(e.clientY-q.oy)/70};else{lk(e.clientX-q.x,e.clientY-q.y,.006);q.x=e.clientX;q.y=e.clientY}
-});
-const lup=e=>{const q=LV.t&&LV.t[e.pointerId];if(q){if(q.left)LV.st=null;delete LV.t[e.pointerId]}if(e.pointerType==='mouse')LV.m=null};
-stage.addEventListener('pointerup',lup);stage.addEventListener('pointercancel',lup);
-$('#lvstop').onclick=()=>{if(LV.on)LV.stop=true};
 let PT=0,PD=30;
-const HRY={slow:' RITMO: slow burn, mucho silencio y planos largos; el miedo crece sin mostrar la amenaza hasta el final.',fast:' RITMO: rápido y agobiante; la amenaza aparece pronto y persigue sin descanso.'};
-const povTxt='\n- PRIMERA PERSONA: la cámara son los ojos del protagonista con id "hero" (defínelo en "cast" y úsalo en todas las escenas con "moves"). No se le ve: el espectador ve lo que él ve. Haz que camine hacia el peligro con "moves" lentos, que se detenga a mirar y que la amenaza aparezca al borde del campo de visión. Los planos solo dividen el tiempo; los subtítulos son sus pensamientos.'+(cfg.povgore?' DETALLES MACABROS EN PRIMERA PERSONA (intensidad alta): los subtítulos son los pensamientos del protagonista, en presente, en primera persona, frases cortas, entrecortadas, con la respiración rota y sin adjetivos de relleno; escribe lo que SIENTE en el cuerpo y lo que ve a un palmo, con sentidos concretos (tacto, sabor, olor, oído). Escalada obligatoria: plano 1 una incomodidad (la boca sabe a hierro, un zumbido que no se va); plano 2 algo raro en su propio cuerpo (las uñas ya no están, el dedo no responde, la sangre de las manos está tibia y no es suya); plano 3 algo lo toca o lo huele (aliento húmedo en la nuca, dedos fríos que le recorren el tobillo, olor a carne dulce); plano 4 comprende lo que hay en el lugar (lo que cuelga del techo gotea sobre su hombro, las paredes respiran, algo se mueve dentro del suelo, oye su propio nombre dicho con su voz); último plano la certeza más cruel, dicha con calma (ya lo estaban esperando; lo que está mordiendo es suyo; la sangre que tose ya está fría). Mezcla lo físico con lo íntimo: recuerdos que se pudren, una voz querida que ahora suena mal. Cada pensamiento debe ser distinto y más perturbador que el anterior, con cortes bruscos a media frase cuando llegue lo peor. El protagonista actúa como un cuerpo real: parpadea con peso, baja la mirada a su pecho y a sus manos empapadas, se queda sin aire, se limpia la sangre de los ojos, aparta la cámara de lo que no soporta ver y la vuelve a posar justo ahí; los planos deben ser lentos, a la altura de sus ojos, y los subtítulos coinciden con lo que mira en ese instante. Que el protagonista toque y reaccione al mundo: apoya la mano en una pared que está caliente o húmeda, retira los dedos pegajosos, huele el aire antes de entrar, se detiene al oír su propia respiración repetida detrás, ve de reojo una figura en el borde del campo de visión que desaparece al girar la cabeza, y duda antes de abrir cada puerta. Incluye VOCES MENTALES: una segunda voz dentro de su cabeza que repite sus pensamientos un instante tarde, otra que susurra su nombre con tono amable, y una voz que conoce cosas que nadie debería saber de él; al avanzar la historia dejan de sonar ajenas y suenan como la suya. Incluye VOCES DE ADVERTENCIA: antes de que el protagonista vea, toque o abra algo importante, una voz suave y urgente le avisa («no lo mires fijamente», «no es lo que parece», «aparta la vista»); la advertencia llega un segundo ANTES de lo que anuncia, y cuando él la ignora lo que ve es peor de lo que la voz temía. Al final descubre que la voz que lo cuidaba era la de aquello que lo acecha, o la suya cuando ya era tarde. Se sugiere con precisión, no se explica: el horror está en el detalle pequeño y cercano.':'');
-function povAim(cam,cs,ts,sd,ids){
-  const t=PT,run=cfg.povbob==='run',sn=cfg.povbob==='sneak',fq=run?11:sn?4.5:7.5,am=run?.09:sn?.025:.05,L=cfg.povlook;
-  const it=ids&&((cs.follow&&ids[cs.follow])||ids.hero||Object.values(ids).find(o=>o.mv));
-  let x,y,z,yaw,w=1;
-  if(it){
-    const m=it.m;
-    if(it.eye===undefined){const b=new THREE.Box3().setFromObject(m);it.eye=Math.max(.8,(b.max.y-b.min.y)*.88)}
-    m.visible=false;x=m.position.x;y=m.position.y+it.eye;z=m.position.z;yaw=m.rotation.y;w=.3+.7*(it.hold?it.hold.mov:1);
-  }else{x=Math.sin(t*.4)*.8;z=9-Math.min(t*(run?3:sn?.9:1.6),15);y=1.7;yaw=Math.PI}
-  yaw+=Math.sin(t*.55)*(L==='frantic'?.9:.3);
-  if(L!=='calm')[.36,.72].forEach(g=>{const u=(t-g*PD)/(L==='frantic'?1:1.8);if(u>0&&u<1)yaw+=Math.PI*.95*Math.sin(Math.PI*u)});
-  const pitch=-.06+Math.sin(t*.37)*.05;
-  y+=Math.sin(t*fq)*am*w;x+=Math.cos(t*fq/2)*am*.5*w;
-  if(cfg.hand==='handheld'){x+=hn(t,0)*.02;y+=hn(t,4.1)*.02}
-  cam.position.set(x,y,z);cam.lookAt(x+Math.sin(yaw)*5,y+Math.sin(pitch)*5,z+Math.cos(yaw)*5);
-  cam.rotateZ(Math.sin(t*fq/2)*am*.25*w+Math.sin(t*.3)*.01);
-  const fv=LENS[cfg.lens]||(run?78:72);if(cam.fov!==fv){cam.fov=fv;cam.updateProjectionMatrix()}
-  return true;
-}
-function modeAim(cam,cs,ids){
-  const t=PT,M=cfg.cmode;let x,y,z,lx,ly,lz,fv=60;
-  if(M==='ceiling'){x=6;y=5;z=7;lx=Math.sin(t*.35)*3;ly=1;lz=0;fv=82}
-  else if(M==='floor'){x=Math.sin(t*.3)*.6;y=.28;z=10-Math.min(t*.45,8);lx=Math.sin(t*.4)*1.2;ly=.7;lz=z-6;fv=78}
-  else if(M==='top'){const u=Math.min(t/PD,1);x=Math.sin(t*.2)*2;y=15-6*u;z=3;lx=0;ly=0;lz=0}
-  else if(M==='kubrick'){x=0;y=1.1;z=10-Math.min(t*16/PD,16);lx=0;ly=1.1;lz=z-5;fv=70}
-  else{const it=ids&&(ids.hero||Object.values(ids).find(o=>o.mv));if(!it)return false;
-    const m=it.m,w=m.rotation.y,sw=Math.sin(w),cw=Math.cos(w);x=m.position.x-sw*1.7+cw*.5;y=m.position.y+2.1;z=m.position.z-cw*1.7-sw*.5;lx=m.position.x+sw*3;ly=m.position.y+1.5;lz=m.position.z+cw*3;fv=58}
-  if(cfg.hand==='handheld'){x+=hn(t,0)*.025;y+=hn(t,4.1)*.025}
-  cam.position.set(x,y,z);cam.lookAt(lx,ly,lz);
-  const f=LENS[cfg.lens]||fv;if(cam.fov!==f){cam.fov=f;cam.updateProjectionMatrix()}
-  return true;
-}
 function aim(cam,cs,ts,sd,ids){
   cs=cs&&typeof cs==='object'?cs:{};
-  if(cfg.pov==='live'){liveAim(cam);return}
-  if(cfg.pov==='off'&&cfg.cmode!=='off'&&modeAim(cam,cs,ids))return;
-  if(cfg.pov!=='off'&&povAim(cam,cs,ts,sd,ids))return;
   const u=sd>0?Math.min(ts/sd,1):0,e=sm(u),d=num(cs.distance,SZ[cs.size]||8,1,60),h=num(cs.height,d*.25,-10,40),sp=num(cs.speed,1,0,5),L=vec(cs.look||cs.target,[0,0,0]);
   const fo=ids&&cs.follow&&ids[cs.follow];
   if(fo){const q=fo.m.position;L[0]=q.x;L[1]=q.y+num(cs.focus,1.2,0,6);L[2]=q.z}
@@ -2588,9 +2493,6 @@ function cards(ctx,W,H,pl,t){
       for(let i=0;i<9;i++){const dx=x-w/2+w*(.06+i*.11)+Math.sin(i*7.3)*8,len=(sz*.25+(i*53%40)*2.4)*Math.min(1,u/1.6),y1=y+sz*.05;
         ctx.lineWidth=3+(i%3)*2;ctx.beginPath();ctx.moveTo(dx,y1);ctx.lineTo(dx,y1+len);ctx.stroke();ctx.fillStyle='#8a000c';ctx.beginPath();ctx.arc(dx,y1+len,ctx.lineWidth*.9,0,6.3);ctx.fill()}
       ctx.restore()}}}
-  if(cfg.lids){const u=Math.min(1,t/pl.total),P=6.5-3*u,k=Math.pow(Math.max(0,Math.sin((t%P)/P*Math.PI)),3);let c=k*(.1+.38*u);
-    const last=pl.total-1.2;if(cfg.frz==='off'&&t>last)c=Math.max(c,Math.min(1,(t-last)/1.1)*.52);
-    if(c>.002){const h=H*c,lid=(y0,y1,ya)=>{const g=ctx.createLinearGradient(0,y0,0,y1);g.addColorStop(0,'#000');g.addColorStop(.8,'rgba(0,0,0,.96)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,ya,W,h)};lid(0,h,0);lid(H,H-h,H-h)}}
 }
 function viewHud(ctx,t,T,sc0){
   const V=cfg.view,z=n=>String(n).padStart(2,'0');ctx.font='600 30px ui-monospace,Menlo,monospace';ctx.textBaseline='top';ctx.fillStyle=ctx.strokeStyle='#fff';ctx.lineWidth=3;
@@ -2723,7 +2625,6 @@ const LOOKS={
   noir:{f:'grayscale(1) contrast(1.4) brightness(.95)'},
   vintage:{f:'sepia(.6) contrast(1.05) saturate(1.1)',t:['#ffb347',.12]},
   neon:{f:'saturate(1.7) contrast(1.15)',t:['#c026d3',.2]},
-  horror:{f:'saturate(.5) contrast(1.3) brightness(.85)',t:['#0b4a32',.3]},
   nightcam:{f:'grayscale(1) sepia(1) hue-rotate(58deg) saturate(2.6) brightness(1.6) contrast(1.15)'}
 };
 const TOD={
@@ -2743,82 +2644,16 @@ function creditsRoll(ctx,W,H,title,dir,mu,u){
   L.forEach((l,i)=>{ctx.globalAlpha=l[2];txt(ctx,l[0],W/2,y0+i*gap,l[1],l[1]>30?600:400,1000)});
   ctx.globalAlpha=1;
 }
-const HT={
-  house:'Casa embrujada: una mansion abandonada con ventanas encendidas, deadtree, grave y un camino con lamp; ella entra a buscar algo.',
-  forest:'Bosque maldito: muchos pine, niebla baja, un camino con una lamp; la amenaza la sigue entre los árboles.',
-  cemetery:'Cementerio de noche: filas de grave, deadtree, niebla; algo se levanta o camina entre las tumbas.',
-  road:'Carretera de noche: un car averiado con las luces encendidas, lamp y pine; alguien camina por la carretera hacia ella.',
-  lab:'Laboratorio abandonado: robot que despierta, luces rojas con glow y cajas; la amenaza es lo que creó el laboratorio.'
-};
-const HE={
-  scare:'Final con susto: la amenaza aparece de golpe en el último plano.',
-  ambig:'Final ambiguo: ella escapa, pero la sombra sigue ahí detrás.',
-  twist:'Final con giro: la amenaza era ella misma o ella ya estaba muerta.',
-  dark:'Final oscuro: la amenaza la atrapa y todo queda a oscuras.'
-};
-const HX={
-  macabre:' EXTREMO MACABRO: el lugar es un altar de muerte. Decorado con grave, coffin entreabierto, skeleton, deadtree, pentagram y muchas candle, más skullpile, chains, cage, cobweb, jars, bloodwall, rats, dolls, wallfaces, eyewall, mirror, eyetree, crows, saltcircle, guillotine, gallows, ironmaiden, operating, stakes y well; luz roja o verdosa, niebla densa y sombras largas. Hay cuerpos y restos que la protagonista descubre (planos de detalle lentos) y una amenaza (zombie, monster o tentacle) que parece venir de un ritual. Se cuenta con lo que queda después, no con lo que se ve hacer.',
-  bloody:' EXTREMO SANGRIENTO: sangre visible en todas las escenas. Usa puddle y trail en el suelo de cada plano, cada vez más grandes y recientes; las víctimas (person) caen una a una y la amenaza (monster o zombie) las ataca con cortes secos, shake 0.7 y luz roja con glow. Muestra las consecuencias con planos de detalle y deja el resto al sonido y al fuera de campo.',
-  extreme:' EXTREMO TOTAL: la película más cruda y macabra posible. Mundo podrido y ritual (grave, coffin, skeleton, deadtree, pentagram, candle) con puddle y trail por todas partes. Varias víctimas (person) y una masacre en el clímax: planos de 1 a 1.5 s, cut seco, shake 0.9, luz roja que parpadea y la amenaza (monster, zombie o tentacle) devorando todo a su paso. Cada escena es peor que la anterior y la sangre se acumula. Final sin piedad: la amenaza gana, nadie se salva y todo queda en silencio entre cuerpos y charcos. Es ficción de terror hecha con criaturas 3D, sin personas reales.'
-};
-const HTR={
-  cult:' ORIGEN: un culto. Hay un ritual en marcha con pentagram en el suelo, candle en círculo y coffin; las víctimas (person) son ofrendas que llegan una a una y la entidad invocada (monster o tentacle) se manifiesta al completarse el ritual. Regla: cada sacrificio la hace más grande.',
-  infect:' ORIGEN: una infección. Los muertos (zombie) se levantan lentos al principio y cada víctima mordida se convierte en uno más en el siguiente plano; la manada crece escena a escena. Regla: el contagio es inevitable y la protagonista llega tarde.',
-  exper:' ORIGEN: un experimento fallido en un laboratorio abandonado. La criatura (monster o tentacle) rompió sus ataduras; hay luces rojas con glow, cajas abiertas y robot apagado. Regla: caza por el sonido, así que quien corre muere primero.',
-  possess:' ORIGEN: una posesión. Un personaje conocido (person) cambia a mitad de la película: se queda quieto, mira fijo a cámara y se mueve a sacudidas hasta atacar a los demás. Regla: la amenaza tiene la cara de alguien querido y solo se nota en pequeños detalles.',
-  beast:' ORIGEN: una bestia ancestral (monster) que caza de noche en un bosque con pine, deadtree y niebla. Deja rastros y restos antes de aparecer y no se detiene. Regla: siempre llega desde el fondo y nunca se la ve completa hasta el clímax.'
-};
-const HVC={
-  one:' VÍCTIMAS: una sola (person). Todo el miedo es una persecución íntima: ella sola, la amenaza cada vez más cerca y un final cruel.',
-  group:' VÍCTIMAS: un grupo de 4 o 5 amigos (person). Se separan por un error y caen uno a uno; cada escena tiene un superviviente menos y los restos del anterior en el suelo.',
-  mass:' VÍCTIMAS: una multitud (muchas person). La amenaza arrasa sin que nadie escape; cada plano suma cuerpos y la huida es imposible.'
-};
-const HSH={
-  off:' MUERTES: siempre fuera de campo. La cámara se aparta o corta a negro justo antes y solo quedan el sonido y la sangre después (puddle y trail).',
-  shadow:' MUERTES: en sombras. Se ven como siluetas y movimientos contra una luz roja o una pared, sin enseñar el cuerpo; después aparece la sangre en el suelo.',
-  direct:' MUERTES: de frente y sin cortar. Planos fijos y largos (3 a 5 s) donde la víctima y la amenaza están en cuadro y no se aparta la cámara; es lo más cruel y perturbador.'
-};
-const hTxt=()=>' TEMA: '+(HT[cfg.htheme]||'elige tú el lugar y la amenaza.')+' FINAL: '+(HE[cfg.hend]||'elige el final más inquietante.')+(HRY[cfg.hbeat]||'')+(HX[cfg.hext]||'')+(HTR[cfg.hthr]||'')+(HVC[cfg.hvic]||'')+(HSH[cfg.hshow]||'');
-const GORE=()=>cfg.gore!=='off'?cfg.gore:cfg.genre!=='horror'?'off':cfg.hext==='extreme'?'lots':cfg.hext==='bloody'?'some':'some';
+const GORE=()=>cfg.gore||'off';
 const GEN={
   adventure:{p:'Aventura épica. Planos amplios y heroicos, cámara dinámica (orbit, crane, track), luz dorada de sol bajo, ritmo ágil, paisajes con montañas y vegetación.',music:'epic',look:'warm'},
   scifi:{p:'Ciencia ficción. Fondos oscuros con luces de neón y objetos con glow, superficies metálicas, robots y cohetes, cámaras dolly y orbit, atmósfera futurista.',music:'tense',look:'neon'},
-  horror:{music:'tense',look:'horror',
-    get p(){return `TERROR DE VERDAD: el miedo nace de lo que no se ve y del ritmo, no de enseñarlo todo.
-  a) ESTRUCTURA DE PLANOS: (1) wide largo, quieto y casi vacío que ubica el lugar (4-5 s); (2) un detalle fuera de lugar: luz que parpadea, puerta abierta, huellas, un charco; (3) la víctima (person) avanza con follow medium y dolly lento; (4) la amenaza (ghost o monster) aparece MUY lejos, al fondo (z menor que -8), de espaldas o casi oculta por la niebla; (5) corte: la víctima mira atrás y la amenaza ya está más cerca en la misma escena, con sus "moves" hacia ella; (6) close del rostro y silencio (fov 28-35); (7) clímax rápido: planos de 1.5-2 s, shake 0.6, la víctima corre (3 unidades/s) y la amenaza detrás; (8) final: plano quieto con una sombra o presencia detrás de ella.
-  b) LUZ: fondo casi negro (#05070a), ambient 0.05-0.12, sol con intensidad 0-0.1, UNA sola luz baja o lateral (intensidad 0.8-1.5) fría #8fb4ff, verdosa #9fd8a0 o ámbar #ff9a3c si es lámpara o fuego, para sombras largas; niebla casi negra azulada con near 2 y far 12-16; una luz roja tenue solo en el clímax.
-  c) CÁMARA: lenta y con intención. Calma: static o dolly lento; tensión: shake 0.15; persecución: shake 0.6. Encuadra a la víctima descentrada con espacio vacío delante. Altura baja (1.2). Usa pull para revelar un vacío y close para el miedo.
-  d) AMENAZA: nunca entera ni quieta en el centro al principio. Respeta su regla (solo se mueve cuando ella no la mira, o la sigue a distancia) y no la expliques.
-  e) DECORADO: suelo oscuro (plane) con 30-60 objetos repartidos en un área de unos 30 por 30 y mucho vacío: mansion o house, deadtree, grave, pine, lamp con luz débil, puddle y trail. Usa weather "mist" o "rain".
-  f) SUBTÍTULOS: frases breves en presente que incomodan sin explicar («Alguien estuvo aquí.», «La puerta estaba cerrada.», «No estás sola.»).
-  g) TRANSICIONES: fade en los momentos lentos y cut seco para el susto. look "horror" o "cold", music "dread" o "choir" en los planos de tensión lenta, "lullaby" para una nana siniestra, "tense" para el susto.
-  h) SONIDO (sonido antes que la imagen): el sonido empieza 0.5-1 s ANTES de que se vea lo que lo causa, así el espectador oye la amenaza un instante antes que la ve. Plano 1 (wide): drone_grave de fondo. Plano 2 (detalle): caja_musica o respiracion_pesada si hay alguien cerca. Plano 4 (amenaza lejos): susurro_lejano, bajo. Plano 5 (la víctima mira atrás): unas_aranando o puerta_cruje. Antes del close silencioso: silencio, sin efectos. Justo antes del susto: silencio de 1-2 s, y entonces silencio_golpe o subgolpe, con la aparición en el mismo plano. Clímax: latido_lento solo si la víctima está quieta. Gore (crujido_huesos, desgarro_piel, gorgoteo_corte, goteo_sangre) solo al final, con corte seco. Final: campana_oxidada en el último plano quieto.`+hTxt()},
-    get s(){return `TERROR CON SENTIDO: la protagonista (person) quiere algo concreto (encontrar a alguien, volver a casa, recoger algo) y por eso entra al lugar peligroso. Beats: 1) lugar y normalidad inquietante; 2) primer detalle fuera de lugar; 3) ella decide seguir por un motivo claro; 4) primera señal de la amenaza, lejos y apenas visible; 5) la amenaza se acerca o ella descubre algo; 6) persecución o encuentro; 7) clímax con un susto; 8) final ambiguo o con giro. La amenaza es UNA criatura elegida por el lugar (clown, doll, spider, skeleton, scarecrow, slender, zombie, tentacle, plague, ghost o monster) con una regla clara que se respeta y nunca se explica. Se revela por escalones: señal, silueta lejana, una parte, entera solo en el clímax; cada beat sube como mucho un escalón. El decorado la anuncia (door abierta, candle, puddle, bat, pentagram). Cada beat es una acción visible; los beats lentos van antes del susto y los cortos después.`+hTxt()}},
-
+  action:{p:'Acción. Planos cortos y dinámicos, cámara en mano con un poco de temblor, movimiento rápido, persecuciones y choques, luz contrastada y colores intensos.',music:'epic',look:'cold'},
+  romance:{p:'Romance. Luz cálida de atardecer, planos medios y primeros planos, cámara suave (dolly lento u orbit), miradas que se cruzan, paleta cálida y ritmo pausado.',music:'calm',look:'warm'},
+  documentary:{p:'Documental. Planos sobrios y estables, paisajes y objetos reales, cámara static o pan lento, subtítulos informativos y sin música dramática.',music:'none',look:'natural'},
   comedy:{p:'Comedia. Colores vivos y saturados, personajes que rebotan, cámara static o pan, ritmo rápido con planos cortos, subtítulos graciosos.',music:'joy',look:'natural'},
   kids:{p:'Cuento infantil. Formas redondeadas, colores pastel, luz suave y cálida, personajes simpáticos, cámara tranquila, subtítulos sencillos.',music:'calm',look:'warm'},
   drama:{p:'Drama. Pocos objetos bien elegidos, planos medios y primeros planos lentos, luz contrastada, paleta sobria, subtítulos emotivos.',music:'calm',look:'cold'}
-};
-const HK=`\n- CAJA DE HERRAMIENTAS DE TERROR (úsala entera; cada pieza tiene su función):\n  · RITUALES: 3 a 5 cultistas (cultist) en círculo alrededor de un altar (altar) con velas, con pentagram en el suelo; un person tumbado sobre el altar es el sacrificio. ASESINATO: un cultista se acerca a la víctima (person) con "moves", se detiene y apuñala ("act":"stab") mientras la víctima cae ("act":"fall" en el paso siguiente); pon un puddle bajo ella y un trail que se aleje de su cuerpo. Después otro cultista arrastra el cuerpo hacia el altar en pasos lentos. PALIZA: el atacante (person o cultist) se acerca a la víctima con "moves" rápidos, se queda quieto con "act":"punch" mirándola ("face"), y la víctima alterna "act":"beaten" en el mismo tiempo; repite 2 o 3 veces con pausas cortas, y termina con "act":"fall" en la víctima. Usa "shake" o "flinch" en planos cortos (1.5 s) para el impacto de cada golpe. ARRASTRE: tras matar, un cultista (o la persona atacante) arrastra el cuerpo con DOS pasos con "moves" que se mueven a la vez hacia el mismo destino: el atacante con "act":"haul" y la víctima con "act":"drag" (se desplaza tumbada, los pies por delante, y deja una estela de sangre detrás); al llegar, la víctima se queda quieta en el suelo. Hazlo lento (unos 4 a 6 s para 4 o 5 metros) y sigue con un plano de la estela. REMATE: cuando la víctima cae, el atacante sigue pegando sin parar: tras el "fall" la víctima pasa a "brutal" (en el suelo, en el mismo punto) y el atacante vuelve a "punch" con más golpes, más rápidos y más cerca; pon puddle y trail que crezcan en cada plano, y termina con el cuerpo inmóvil y un plano quieto del charco. REACCIÓN DEL PROTAGONISTA: cada vez que el protagonista (hero) vea un asesinato, una paliza, un cadáver, sangre o un ritual, reacciona en el paso siguiente: primero "horror" (se queda paralizado temblando, aparta la mirada con "face" hacia otro lado) y luego "recoil" (retrocede tambaleándose) antes de huir o esconderse. Nunca mira una escena violenta sin reaccionar. Cuando el protagonista se acerca, los cultistas se giran a la vez y uno levanta el cuchillo, con "moves" lentos y en silencio.\n  · MOVIMIENTOS MACABROS (cada uno en su momento, nunca todos a la vez): UNA MUERTE tiene tres tiempos: el atacante \"strangle\" y la víctima \"choke\" (4 a 6 s, mismo tiempo en los dos), luego \"fall\" y por último \"convulse\" hasta el final del plano; después silencio y un plano de detalle. UN DESPERTAR: la víctima queda tendida (\"fall\" o \"convulse\") varios segundos y se incorpora con \"rise\"; después \"possess\" con \"face\" hacia el protagonista, que es lo que de verdad da miedo. RITUAL: cultistas y doctor de la peste con \"worship\" mientras ocurre el sacrificio, siempre quietos y cantando. PROTAGONISTA: entra con \"creep\", se asoma a las esquinas con \"peek\", se queda mirando con \"horror\", retrocede con \"recoil\", y cuando ya no puede huir \"sob\" o \"plead\"; \"scream\" justo antes de correr. HERIDO: \"limp\" mientras camina. CÁMARA: move \"creep\" para acercarse despacio a lo que no debe verse y \"vertigo\" (travelling con zoom contrario) en el instante en que el protagonista comprende. Estos movimientos ya traen sus gritos, jadeos y huesos: no los dupliques con sfx.\n  · CRIATURAS (caminan con "moves" o "path"): clown (risa y globos; quieto al fondo y en el plano siguiente más cerca), doll (nunca se ve caminar: cambia de sitio entre planos y siempre mira a cámara), spider (techo, esquinas y suelo; rápida y a sacudidas), skeleton (rituales y tumbas), scarecrow (campo; inmóvil hasta que le dan la espalda), slender (alto y callado, al borde del bosque; solo avanza cuando no lo miran), plague (doctor de la peste: aparece lento y silencioso con su farol, se detiene a mirar a la víctima y la ataca con la sierra; ideal como verdugo o jefe de un ritual), zombie (lentos y en grupo, desde varios lados), monster (bestia de caza; revela sombra, ojos rojos, un brazo), tentacle (surge del suelo junto a grietas y charcos; no camina), ghost (flota y atraviesa; luz fría), bat (presagio en el aire con "orbit").\n  · LUGAR Y PRESAGIOS: mansion, house, door (abierta en el plano 2 sin que nadie la abriera), bed (algo a los pies o bajo la cama), coffin, grave, deadtree, pentagram con candle en círculo (ritual), pumpkin (campo), lamp (única luz y parpadea), puddle y trail (el rastro lleva hacia la amenaza), car (averiado, con faros).\n  · ACCIDENTES Y CHOQUES: un car (con "path" y "face":true) avanza de noche por una carretera de tierra (un plane oscuro y largo, puddle en los baches, rock en la calzada, deadtree y lamp a los lados) hacia un árbol o deadtree puesto en mitad del camino. Antes del choque, planos con la cámara detrás del coche y "shake" de 0.3 a 0.6 para que se note la mala ruta. El choque ocurre en un plano corto (2 a 3 s) con "shake" 1 y el sfx 14_subgolpe justo en el impacto (02_crujido_huesos si hay víctimas). En la escena siguiente cambia el car por un wreck en el mismo punto, con puddle de sangre alrededor, luz roja y una person que se acerca con "moves" y termina mirando al wreck ("act":"look"). Un accidente también sirve de origen del horror: lo que sale del coche no es lo que entró.\n  · ESCALERA DE REVELACIÓN: señal (huella, sonido, objeto movido) → silueta lejana → una parte (ojos, mano) → entera solo en el clímax. Cada plano sube como mucho un escalón.\n  · GORE Y MACABRO: en cada escena de terror pon restos (viscera, carcass, hanged, limb, head) con más densidad; en exteriores usa coches destrozados (wreck), campos (field) y graneros (barn), con sangre en el suelo y restos alrededor junto a puddle y trail; el close va sobre la herida, la sangre fresca y la carne abierta, con luz roja o cálida que los haga brillar húmedos.\\n  · LUZ: ambient bajo, un spot bajo y lateral, "glow" rojo solo en la amenaza, fog near 2 y far 20-30, weather mist o rain.\n  · CÁMARA: follow con dolly en calma; static en un wide vacío; close con fov 28-35 en el rostro; pull para revelar un vacío; "from/to/look" para un plano a ras del suelo; shake 0-0.2 en tensión y 0.6-0.9 en el ataque; último plano quieto.\n  · MONTAJE: fade en lo lento, cut seco en el susto; planos largos antes del susto y de 1 a 2 s después.`;
-const CM={ceiling:'esquina del techo, vigilando',floor:'a ras del suelo, reptando',top:'cenital, bajando desde arriba',kubrick:'travelling hacia el fondo',shoulder:'sobre el hombro del protagonista'};
-const htools=()=>{
-  const c=cfg,A=[],on=(k,t)=>k&&A.push(t);
-  on(c.stalk!=='off','el motor ya coloca un/a "'+c.stalk+'" que avanza desde el fondo en cada escena: NO lo repitas; haz que el héroe lo vea de reojo y cuenta la historia alrededor de esa presencia');
-  on(GORE()!=='off'||c.gx!=='off'||c.gy!=='off','el motor ya esparce sangre, cuerpos y restos: el héroe los descubre con planos close y reacciona; no añadas más puddle ni trail');
-  on(c.eyes!=='off','hay ojos brillantes en la oscuridad: deja zonas vacías y oscuras para que se vean');
-  on(c.flick!=='off','las luces parpadean solas: pon lamp y luces que lo justifiquen');
-  on(c.scare!=='off','habrá un susto '+(c.scare==='mid'?'a mitad de la película':'al final')+': el plano anterior es largo, quieto y en silencio; el susto es la amenaza llenando el cuadro en un plano de 1 s con cut');
-  on(c.torch!=='off','el protagonista lleva linterna: la linterna es un foco real que apunta a donde mira el protagonista; ambient bajo (0.2) y el haz descubre el entorno, con sombras y restos iluminados');
-  on(c.view!=='off','la imagen simula una grabación ('+c.view+'): encuadra como si la hiciera alguien dentro de la escena, sin planos imposibles');
-  on(c.cmode!=='off','cámara fija de terror ('+(CM[c.cmode]||c.cmode)+'): piensa la acción para ese punto de vista');
-  on(c.blackout!=='off','habrá apagón: la amenaza se acerca a oscuras y al volver la luz está mucho más cerca');
-  on(c.zoom!=='off'||c.tilt!=='off','la cámara es incómoda (zoom lento o inclinación): usa shake 0-0.2 y planos largos');
-  on(c.thick,'la niebla se espesa sola: abre con niebla ligera');
-  on(c.mac!=='off','el motor ya reparte instrumentos de muerte (guillotina, horca, dama de hierro, mesa de operaciones, estacas, pozo) por cada escena: el héroe los descubre con planos lentos; no añadas más');
-  on(c.bmsg!=='off','a mitad de la película aparece en pantalla un mensaje escrito con sangre: prepara la tensión para ese momento con un plano quieto y silencioso');
-  on(c.steps!=='off'||c.whisp!=='off'||c.creak!=='off'||c.breath||c.tick||c.knock||c.musicbox||c.heart||c.chainsnd||c.laugh||c.drip||c.drone!=='off','el sonido de miedo ya está montado (pasos, susurros, crujidos, latido, golpes...): deja planos largos y quietos para que se oiga y haz que lo que se oye coincida con lo que pasa');
-  on(c.card!=='off'||c.endc,'hay tarjetas de texto de metraje encontrado: la historia termina sin resolver, con alguien desaparecido o la presencia aún ahí');
-  return A.length?'\n- HERRAMIENTAS DE TERROR ACTIVAS (coordínate con ellas):'+A.map(t=>'\n  · '+t).join(''):'';
 };
 const MU={
   epic:{r:45,b:84,c:[[0,3,7],[-4,0,3],[3,7,10],[-2,2,5]],w:'sawtooth',a:1,d:1},
@@ -3056,19 +2891,6 @@ function weather(S,kind){
 }
 
 /* ---------- Render y grabación ---------- */
-function spec333(){
-  const D=+cfg.dur||30,d2=Math.max(8,Math.round(D*.42)),d1=Math.max(6,D-d2),walk=Math.min(5,d2-3.5);
-  const w=(shape,color,pos,scale,x)=>Object.assign({shape,color,pos,scale},x),she={asset:'person',id:'she',color:'#c9d3e6',color2:'#9aa6bf',scale:.9};
-  const room=[w('plane','#2b2420',[0,0,2],[10,12,1],{rot:[-90,0,0]}),w('box','#3a3230',[0,2,-2],[10,4,.2]),w('box','#322b29',[-5,2,2],[.2,4,12]),w('box','#322b29',[5,2,2],[.2,4,12]),
-    w('box','#9fb8ff',[-4.88,2.3,.5],[.05,1.6,1.2],{glow:1.4}),w('box','#1c1715',[-2.8,1.1,-1.88],[1,2.2,.05]),w('box','#241e1c',[3.6,1.4,-1.5],[1.2,2.8,.8]),w('box','#4a3b36',[1.8,.4,-1.2],[.7,.8,.6]),{asset:'bed',pos:[0,0,0]}];
-  const cam={from:[0,2.7,6.3],to:[0,2.7,6.3],look:[0,.9,0],fov:55},
-    base={weather:'none',background:'#05070a',fog:{color:'#05070a',near:7,far:24},ambient:.14,sun:{color:'#8fa8ff',intensity:.05,pos:[-4,6,2]},
-      lights:[{type:'point',color:'#a8bfff',pos:[-3.6,3,.5],intensity:1.2},{type:'point',color:'#ffffff',pos:[0,2.5,5.5],intensity:.6}]};
-  return{title:'3:33 AM',look:'nightcam',music:'none',scenes:[
-    {...base,objects:[...room,{...she,id:undefined,pos:[0,.88,.6],rot:[-90,0,0],act:'idle'},w('box','#3c4d6e',[0,1,.55],[2,.28,1.9],{anim:'float',speed:.5})],shots:[{dur:d1,camera:cam,transition:'cut'}]},
-    {...base,objects:[...room,w('box','#3c4d6e',[0,.8,.3],[1.9,.2,1.6],{rot:[0,0,12]}),w('box','#3c4d6e',[-1.2,.1,.9],[.9,.2,.7],{rot:[0,30,0]}),
-      {...she,pos:[-1.5,0,.3],moves:[{t:1.5,to:[-1.5,0,.3]},{t:1.5+walk,to:[0,0,3.7]}]}],shots:[{dur:d2,camera:cam,transition:'cut'}]}]};
-}
 function camHud(ctx,t,cm,t33,N,bo){
   const[wh,wm]=(cfg.wake||'03:33').split(':').map(Number),tg=(wh<12?86400:0)+wh*3600+wm*60,sp=tg-84600;
   const lapse=cm==='lapse',now=new Date();let s,k=0,hot=false;
@@ -3084,8 +2906,21 @@ function camHud(ctx,t,cm,t33,N,bo){
   if(lapse){put(t<t33?'▶▶ x'+Math.round(sp/(t33/N)/100)*100:'▶ x1',40,650-bo,'left');put('NOCHE '+(k+1)+'/'+N,1240,650-bo,'right')}
 }
 const MDL={},MCL={},MDLS={};
-function loadGLBModels(){return Promise.all(Object.keys(MDLS).map(k=>new Promise(res=>{try{new THREE.GLTFLoader().load(MDLS[k].u,g=>{const root=new THREE.Group(),sc=g.scene;const sz=new THREE.Box3().setFromObject(sc).getSize(new THREE.Vector3());sc.scale.setScalar(MDLS[k].h/Math.max(sz.y,1e-3));sc.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(sc),c=b2.getCenter(new THREE.Vector3());sc.position.set(-c.x,-b2.min.y,-c.z);root.add(sc);MDL[k]=root;MCL[k]=g.animations||[];res()},undefined,()=>res())}catch(e){res()}})))}
-const MODLOAD=loadGLBModels();
+MDLS.b2={u:'modelos/2b.glb',h:1.7};
+MDLS.mx={u:'modelos/mixamo_walk.glb',h:1.75};
+const gltfLoader=()=>{const L=new THREE.GLTFLoader();if(THREE.DRACOLoader){const d=new THREE.DRACOLoader();d.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/gltf/');L.setDRACOLoader(d)}return L};
+function loadGLBModels(){return Promise.all(Object.keys(MDLS).map(k=>new Promise(res=>{try{(MDLS[k].fmt==='fbx'?new THREE.FBXLoader():gltfLoader()).load(MDLS[k].u,g0=>{const g=g0.scene?g0:{scene:g0,animations:g0.animations||[]};const root=new THREE.Group(),sc=g.scene;const sz=new THREE.Box3().setFromObject(sc).getSize(new THREE.Vector3());sc.scale.setScalar(MDLS[k].h/Math.max(sz.y,1e-3));sc.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(sc),c=b2.getCenter(new THREE.Vector3());sc.position.set(-c.x,-b2.min.y,-c.z);root.add(sc);MDL[k]=root;MCL[k]=g.animations||[];res()},undefined,()=>res())}catch(e){res()}})))}
+/* ---------- Archivos propios: se guardan en el dispositivo (IndexedDB), funcionan sin conexión ---------- */
+const UDB=()=>new Promise((res,rej)=>{const q=indexedDB.open('estudio3d',1);q.onupgradeneeded=()=>q.result.createObjectStore('files',{keyPath:'id'});q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+const udbRun=async(mode,fn)=>{const db=await UDB();return new Promise((res,rej)=>{const t=db.transaction('files',mode),st=t.objectStore('files');const r=fn(st);t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)})};
+const udbAll=()=>udbRun('readonly',st=>st.getAll()).then(v=>v||[]);
+const udbPut=v=>udbRun('readwrite',st=>st.put(v));
+const udbDel=id=>udbRun('readwrite',st=>st.delete(id));
+function addUserModel(f){const k='u'+f.id.replace(/\W/g,'');MDLS[k]={u:URL.createObjectURL(f.blob),h:1.7,fmt:/\.fbx$/i.test(f.name)?'fbx':'glb'};LIB[k]=()=>[];LS[k]=1;const sel=$('#shape');if(sel&&!sel.querySelector('option[value="'+k+'"]')){const o=document.createElement('option');o.value=k;o.textContent=f.name.replace(/\.glb$/i,'')+' (mío)';sel.appendChild(o)}return k}
+function renderUserList(all){const el=$('#upl');if(!el)return;el.innerHTML='';all.forEach(f=>{const d=document.createElement('div');d.textContent=f.name+' · '+(f.blob.size/1e6).toFixed(1)+' MB ';const b=document.createElement('button');b.type='button';b.className='ghost';b.textContent='Quitar';b.onclick=async()=>{await udbDel(f.id);location.reload()};d.appendChild(b);el.appendChild(d)})}
+async function userModelsLoad(){try{const all=await udbAll();all.forEach(f=>{if(f.blob)addUserModel(f)});renderUserList(all)}catch(e){}}
+$('#upfile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!/\.(glb|fbx)$/i.test(f.name)){say('Solo se aceptan modelos .glb o .fbx.');return}if(f.size>80e6){say('El archivo pesa más de 80 MB. Bajalo de tamaño antes de subirlo.');return}try{await udbPut({id:f.name+'-'+f.size+'-'+Date.now(),name:f.name,blob:f});location.reload()}catch(err){say('No se pudo guardar el archivo en este dispositivo.')}};
+const MODLOAD=userModelsLoad().then(loadGLBModels);
 let GTEX=null;
 function groundTex(){if(GTEX)return GTEX;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');const im=x.createImageData(256,256);for(let i=0;i<im.data.length;i+=4){const v=200+Math.random()*55|0;im.data[i]=v;im.data[i+1]=v;im.data[i+2]=v;im.data[i+3]=255}x.putImageData(im,0,0);for(let k=0;k<70;k++){x.fillStyle='rgba(0,0,0,'+(Math.random()*.1).toFixed(3)+')';x.beginPath();x.arc(Math.random()*256,Math.random()*256,Math.random()*20+2,0,6.3);x.fill()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(8,8);t.encoding=THREE.sRGBEncoding;GTEX=t;return t}
 function envTex(R,bg){const es=new THREE.Scene(),g=new THREE.SphereGeometry(50,32,16),top=new THREE.Color(bg).lerp(new THREE.Color('#cfe3ff'),.45),bot=new THREE.Color(bg).multiplyScalar(.35),cols=[],P=g.attributes.position;for(let i=0;i<P.count;i++){const u=Math.min(1,Math.max(0,(P.getY(i)/50+1)/2)),c=bot.clone().lerp(top,u);cols.push(c.r,c.g,c.b)}g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));es.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));const pm=new THREE.PMREMGenerator(R),rt=pm.fromScene(es,.04).texture;pm.dispose();return rt}
@@ -3141,12 +2976,12 @@ function renderCore(spec){
     const wx=cfg.fx==='auto'?(spec.scenes||[]).map(x=>x&&x.weather).find(w=>w&&w!=='none'):cfg.fx;
     const amb=cfg.amb==='auto'?({rain:'rain',snow:'wind',fireflies:'night',mist:'wind'}[wx]||'none'):cfg.amb;
     const sc0=cfg.scare==='end'?pl.total-1.4:cfg.scare==='mid'?pl.total*.55:-1,sa=t=>sc0>=0&&t>=sc0&&t<sc0+.6?1-(t-sc0)/.6:0,fl={soft:.35,hard:.8}[cfg.flick]||0,fz=cfg.frz==='off'?-1:pl.total-(+cfg.frz),cm=cfg.tpl!=='off'?'lapse':cfg.cam,N=+cfg.nights||1,t33=pl.blocks.length>1?pl.blocks[1].t0:pl.total*.6,
-      bt=sc0>=0?sc0+.1:pl.total*.6,bl=(cfg.lensblood||(cfg.genre==='horror'&&GORE()==='lots'))?Array.from({length:16},()=>({x:Math.random()*W,y:Math.random()*H*.8,r:(12+Math.random()*50)*k})):null;
+      bt=sc0>=0?sc0+.1:pl.total*.6,bl=null;
     cv.width=W;cv.height=H;
     const bkT=cfg.blackout==='twice'?[pl.total*.35,pl.total*.7]:cfg.blackout==='mid'?[pl.total*.45]:[],bkf=bkT.length?t=>bkT.some(a=>t>=a&&t<a+1.6&&!(t>a+.5&&t<a+.65)):null,hbT=[],pxc=document.createElement('canvas'),nzc=document.createElement('canvas'),stT=(cfg.stat==='many'?[.12,.27,.43,.6,.78,.92]:cfg.stat==='some'?[.3,.66]:[]).map(x=>x*pl.total),sbT=(cfg.subl?[.2,.47,.78]:[]).map(x=>x*pl.total);ENVEV.sc=sc0;ENVEV.bk=bkT;
     pxc.width=320;pxc.height=180;nzc.width=nzc.height=128;{const c=nzc.getContext('2d'),d=c.createImageData(128,128);for(let i=0;i<d.data.length;i+=4){d.data[i]=d.data[i+1]=d.data[i+2]=Math.random()*255;d.data[i+3]=255}c.putImageData(d,0,0)}
     const nzp=ctx.createPattern(nzc,'repeat');
-    if(cfg.hbvig||cfg.heart)for(let q=0;q<T;){const g=1-.5*q/T;hbT.push(q,q+.28*g);q+=g}
+    if(cfg.heart)for(let q=0;q<T;){const g=1-.5*q/T;hbT.push(q,q+.28*g);q+=g}
     const gc=document.createElement('canvas');gc.width=W;gc.height=H;
     const ac2=document.createElement('canvas');ac2.width=W;ac2.height=H;const actx=ac2.getContext('2d');
     const bh=cfg.bars==='none'?0:Math.max(0,Math.round((H-W/+cfg.bars)/2));
@@ -3172,63 +3007,6 @@ function renderCore(spec){
       if(['cam','thermal','webcam'].includes(cfg.view)){ctx.save();ctx.scale(k,k);viewHud(ctx,t,T,sc0);ctx.restore()}
       if(stT.some(a=>t>=a&&t<a+.3)){ctx.save();ctx.globalAlpha=.85;ctx.translate(Math.random()*128|0,Math.random()*128|0);ctx.fillStyle=nzp;ctx.fillRect(-128,-128,W+128,H+128);ctx.restore()}
       if(sbT.some(a=>t>=a&&t<a+.07)){ctx.globalCompositeOperation='difference';ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over'}
-      if(cfg.sanity){const u=Math.min(t/T,1);if(Math.random()<.03+.4*u*u){const y=Math.random()*H|0,h=8+Math.random()*80*u|0;ctx.drawImage(cv,0,y,W,h,(Math.random()-.5)*(30+120*u),y,W,h)}if(u>.5&&Math.random()<.04){ctx.fillStyle='rgba(255,0,0,.08)';ctx.fillRect(0,0,W,H)}}
-      if(cfg.hbvig){let a=0;for(const b of hbT){const d=t-b;if(d>=0&&d<.35)a=Math.max(a,1-d/.35)}
-        if(a>0){const g=ctx.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.9);g.addColorStop(0,'rgba(120,0,0,0)');g.addColorStop(1,'rgba(150,0,0,'+.55*a*(.4+.6*t/T)+')');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}}
-      if(cfg.pov!=='off'&&cfg.povhands){const bo=Math.sin(t*(cfg.povbob==='run'?11:7.5))*H*.012;ctx.save();ctx.translate(W*.8,H*.9+bo);ctx.rotate(-.3);
-        ctx.fillStyle='#0d0b09';ctx.fillRect(-W*.013,-H*.32,W*.026,H*.36);ctx.fillStyle='#1c1814';ctx.fillRect(-W*.02,-H*.34,W*.04,H*.05);
-        ctx.fillStyle='#2b231d';ctx.beginPath();ctx.ellipse(0,0,W*.032,H*.08,0,0,6.3);ctx.fill();ctx.restore()}
-      if(cfg.pov!=='off'&&cfg.povgore){const u=Math.min(t/T,1),sh=Math.sin(t*23)*H*.004*(.4+u),bo=Math.sin(t*(cfg.povbob==='run'?11:7.5))*H*.012;
-        ctx.save();ctx.translate(W*.2+sh,H*.92+bo);ctx.rotate(.28);
-        ctx.fillStyle='#8a7d72';ctx.beginPath();ctx.ellipse(0,0,W*.04,H*.09,0,0,6.3);ctx.fill();   // palma pálida
-        for(let i=0;i<4;i++){ctx.fillStyle='#8a7d72';ctx.fillRect(-W*.03+i*W*.0175,-H*.2-(i%2)*H*.015,W*.012,H*.19);   // dedos
-          ctx.fillStyle='#5a0a0a';ctx.fillRect(-W*.03+i*W*.0175,-H*.2-(i%2)*H*.015,W*.012,H*.025);}                       // uñas arrancadas
-        ctx.fillStyle='#3a0505';ctx.beginPath();ctx.ellipse(0,-H*.01,W*.018,H*.035,0,0,6.3);ctx.fill();                      // herida abierta
-        ctx.fillStyle='#8a0f0f';for(let i=0;i<5;i++){const a=((t*.15+i*.2)%1),x=(i-2)*W*.014;ctx.fillRect(x,H*.01,W*.004,H*.03+a*H*.18*(.5+u))}  // sangre que corre
-        ctx.fillStyle='#6b0d0d';ctx.beginPath();ctx.ellipse(0,H*.02,W*.04,H*.05,0,0,3.15);ctx.fill();ctx.restore();
-        ctx.fillStyle='rgba(120,6,6,.8)';for(let i=0;i<5+(u*8|0);i++){const x=W*((i*.137+.05)%1),a=((t*.06*(1+i%3)+i*.31)%1),y=H*.02+a*H*.55;   // gotas por la lente
-          ctx.beginPath();ctx.ellipse(x,y,W*.004,H*.012+a*H*.01,0,0,6.3);ctx.fill();ctx.fillRect(x-W*.0008,H*.02,W*.0016,y-H*.02)}}
-      if(cfg.pov!=='off'&&cfg.povgore){const u=Math.min(t/T,1),hb=.5+.5*Math.sin(t*(5+4*u));
-        ctx.save();   // visión estrechándose y enrojeciendo
-        let g=ctx.createRadialGradient(W/2,H/2,H*(.55-.3*u),W/2,H/2,H*.95);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(40,0,0,'+(.35+.5*u)*(.7+.3*hb)+')');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-        // aliento: vaho que sube desde abajo, más rápido cuanto más cansado
-        const pr=2.6-1.4*u,ph=(t%pr)/pr;if(ph<.7){const q=ph/.7,al=.16*Math.sin(q*Math.PI);g=ctx.createRadialGradient(W*.5,H*(1-.1-.25*q),0,W*.5,H*(1-.1-.25*q),H*(.12+.25*q));g.addColorStop(0,'rgba(210,220,230,'+al+')');g.addColorStop(1,'rgba(210,220,230,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
-        // ropa rasgada y empapada al mirar hacia abajo
-        ctx.fillStyle='rgba(22,16,13,.92)';ctx.beginPath();ctx.moveTo(0,H);for(let i=0;i<=12;i++)ctx.lineTo(W*i/12,H*(.96-.035*((i*7)%3)/2-.02*Math.sin(i*2.1)));ctx.lineTo(W,H);ctx.fill();
-        ctx.fillStyle='rgba(110,8,8,.75)';ctx.beginPath();ctx.ellipse(W*.5,H,W*(.05+.16*u),H*(.03+.05*u),0,0,6.3);ctx.fill();
-        // párpados: parpadeos cada vez más lentos y pesados
-        const bp=4.2-1.6*u,bt=t%bp,bl=bt<.28?Math.sin(bt/.28*Math.PI):0,dr=.05+.16*u*(.5+.5*Math.sin(t*.7)),cl=Math.min(.55,bl*.5+dr);
-        if(cl>.01){g=ctx.createLinearGradient(0,0,0,H*cl);g.addColorStop(0,'#000');g.addColorStop(.85,'#050000');g.addColorStop(1,'rgba(5,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H*cl);
-          g=ctx.createLinearGradient(0,H,0,H*(1-cl*.8));g.addColorStop(0,'#000');g.addColorStop(1,'rgba(5,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,H*(1-cl*.8),W,H*cl*.8)}
-        // sangre de la frente que se mete en el ojo
-        const fy=((t*.05)%1);g=ctx.createLinearGradient(0,0,0,H*(.1+.5*fy));g.addColorStop(0,'rgba(100,5,5,.8)');g.addColorStop(1,'rgba(100,5,5,0)');ctx.fillStyle=g;ctx.fillRect(W*.62,0,W*.012,H*(.1+.5*fy));
-        ctx.restore()}
-      if(cfg.pov!=='off'&&cfg.povgore){const u=Math.min(t/T,1);ctx.save();
-        // visión doble cuando flaquea
-        if(u>.3){ctx.globalAlpha=.14*u;ctx.drawImage(cv,Math.sin(t*1.3)*W*.012*(.5+u),Math.cos(t*1.1)*H*.006,W,H);ctx.globalAlpha=1}
-        // figuras en el borde del campo de visión: solo están cuando no las miras
-        const id=Math.floor(t/8),ft=t%8;if(u>.15&&ft>5.4&&ft<6.1){const al=Math.sin((ft-5.4)/.7*Math.PI),x=id%2?W*.955:W*.045,hy=H*.3;
-          ctx.globalAlpha=.85*al;ctx.fillStyle='#030000';ctx.fillRect(x-W*.03,hy,W*.06,H*.6);ctx.beginPath();ctx.ellipse(x,hy-H*.04,W*.022,H*.07,0,0,6.3);ctx.fill();
-          ctx.fillStyle='#ff2a1a';ctx.fillRect(x-W*.012,hy-H*.05,W*.006,H*.008);ctx.fillRect(x+W*.006,hy-H*.05,W*.006,H*.008);ctx.globalAlpha=1}
-        // te limpias la sangre de la lente con la mano: un borrón que cruza la pantalla
-        const wp=(t+3)%11;if(wp<.7){const q=wp/.7;ctx.strokeStyle='rgba(105,8,8,'+(.4*(1-q))+')';ctx.lineCap='round';ctx.lineWidth=H*.16;ctx.beginPath();ctx.moveTo(W*.08,H*(.7-.2*q));ctx.quadraticCurveTo(W*.5,H*(.15+.3*q),W*(.1+.8*q),H*(.5-.1*q));ctx.stroke()}
-        // la mano de la linterna también está pegajosa
-        if(cfg.povhands){const bo=Math.sin(t*(cfg.povbob==='run'?11:7.5))*H*.012;ctx.fillStyle='rgba(110,8,8,.85)';ctx.beginPath();ctx.ellipse(W*.8-W*.012,H*.9+bo-H*.01,W*.022,H*.04,-.3,0,6.3);ctx.fill();
-          for(let i=0;i<3;i++){const a2=((t*.1+i*.33)%1);ctx.fillRect(W*.8-W*.02+i*W*.012,H*.9+bo,W*.003,H*.02+a2*H*.07)}}
-        ctx.restore()}
-      if(cfg.pov!=='off'&&cfg.povgore){const u=Math.min(t/T,1),vi=Math.floor((t-3)/3.25),vw=(t-3)%3.25,wn=vi%2===1;
-        if(t>=3&&vw<2.5){
-          const P=u<.35?['¿oyes eso?','no te pares','alguien respira','sigue andando','estás solo, ¿verdad?']:u<.7?['ya estás aquí','di mi nombre','no mires atrás','mira tus manos','esto no es tu sangre','ábrela']:['ya te esperaba','es tu culpa','mira lo que hiciste','nadie va a venir','vuelve conmigo','sigue aquí dentro'];
-          const W2=u<.35?['cuidado','no lo mires fijamente','no toques eso','eso no estaba ahí antes','no cierres los ojos','escucha antes de entrar']:u<.7?['no es lo que parece','no creas lo que ves','aparta la vista','te está mirando','no abras esa puerta','no te acerques más']:['ya te vio','no respires','no digas que lo viste','cierra los ojos','no era un espejo','no era yo quien hablaba'];
-          let tx=wn?W2[(vi*5+2)%W2.length]:P[((vi>>1)*3+1)%P.length];const rv=Math.min(1,vw/.6),n=Math.floor(tx.length*rv);tx=tx.slice(0,n);
-          if(u>.5)tx=tx.split('').map(c=>c!==' '&&Math.random()<.04*u?'█▒░'[Math.random()*3|0]:c).join('');
-          const env=vw<.3?vw/.3:vw>1.9?Math.max(0,(2.5-vw)/.6):1,fl=.55+.45*Math.random(),sz=H*(.045+.01*u),left=((vi>>1)%2===0)!==wn,
-            px=left?W*.06:W*.94,py=H*(.28+((vi*37)%40)/100);
-          ctx.save();ctx.textAlign=left?'left':'right';ctx.font='italic 700 '+sz+'px "Bricolage Grotesque",Georgia,serif';ctx.shadowColor='rgba(150,0,0,.8)';ctx.shadowBlur=sz*.5;
-          ctx.fillStyle='rgba(120,10,10,'+.7*env*fl+')';ctx.fillText(tx,px+(Math.random()-.5)*W*.006*(1+u*3)+W*.004,py+H*.003);
-          if(wn){ctx.shadowColor='rgba(200,220,255,.6)';const tr=(Math.random()-.5)*W*.004;ctx.fillStyle='rgba(200,215,235,'+.85*env*fl+')';ctx.fillText(tx,px+tr,py+tr);ctx.shadowBlur=0;ctx.fillStyle='rgba(120,0,0,'+.09*env+')';ctx.fillRect(0,0,W,H)}else{ctx.fillStyle='rgba(230,225,215,'+.75*env*fl+')';ctx.fillText(tx,px,py)}
-          if(vw>.5&&vw<2.2){ctx.font='italic 400 '+sz*.6+'px "Bricolage Grotesque",Georgia,serif';ctx.fillStyle='rgba(180,180,180,'+.35*env+')';ctx.fillText(tx,left?W*.3:W*.7,py+H*.1)}   // eco: tu propia mente repitiéndola
-          ctx.restore()}}
       if(vg){ctx.fillStyle=vg;ctx.fillRect(0,0,W,H)}
       if(gp){ctx.save();ctx.translate(Math.random()*256|0,Math.random()*256|0);ctx.globalCompositeOperation='overlay';ctx.globalAlpha=.12;ctx.fillStyle=gp;ctx.fillRect(-256,-256,W+256,H+256);ctx.restore()}
       if(bh){ctx.fillStyle='#000';ctx.fillRect(0,0,W,bh);ctx.fillRect(0,H-bh,W,bh)}
@@ -3244,11 +3022,11 @@ function renderCore(spec){
     R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;
     const cam=new THREE.PerspectiveCamera(45,W/H,.1,300);
     const st=cv.captureStream(fps),AU=window.AudioContext||window.webkitAudioContext;let AC=null;
-    if(AU&&(pl.shots.some(h=>h.sfx.length)||pl.blocks.some(b=>(b.sc.items||[]).some(it=>it.mv&&it.mv.some(g=>g.act==='fall'||g.act==='punch'||g.act==='brutal'||g.act==='horror'||g.act==='recoil'||SNDACT[g.act])))||cfg.atk||(mood!=='none'&&+cfg.vol>0)||amb!=='none'||cfg.heart||sc0>=0||bl||cfg.steps!=='off'||cfg.whisp!=='off'||fz>=0||cfg.creak!=='off'||cfg.breath||cfg.tick||cfg.riser||cfg.hbvig||cfg.povgore||cfg.pov==='live'||cfg.musicbox||cfg.knock||cfg.chainsnd||cfg.laugh||cfg.drip||cfg.drone!=='off'||stT.length||bkT.length)){
-      try{AC=new AU();if(cfg.pov==='live')AC.suspend();else AC.resume();const dd=AC.createMediaStreamDestination(),dst=AC.createGain(),A0=AC.currentTime+.1;dst.connect(dd);LV.ac=AC;LV.dst=dst;
+    if(AU&&(pl.shots.some(h=>h.sfx.length)||pl.blocks.some(b=>(b.sc.items||[]).some(it=>it.mv&&it.mv.some(g=>g.act==='fall'||g.act==='punch'||g.act==='brutal'||g.act==='horror'||g.act==='recoil'||SNDACT[g.act])))||cfg.atk||(mood!=='none'&&+cfg.vol>0)||amb!=='none'||cfg.heart||sc0>=0||bl||cfg.steps!=='off'||cfg.whisp!=='off'||fz>=0||cfg.creak!=='off'||cfg.breath||cfg.tick||cfg.riser||cfg.musicbox||cfg.knock||cfg.chainsnd||cfg.laugh||cfg.drip||cfg.drone!=='off'||stT.length||bkT.length)){
+      try{AC=new AU();AC.resume();AV.ac=AC;const dd=AC.createMediaStreamDestination(),dst=AV.dst=AC.createGain(),A0=AC.currentTime+.1;dst.connect(dd);AV.ac=AC;AV.dst=dst;
       if(fz>=0){dst.gain.setValueAtTime(1,A0+fz);dst.gain.setValueAtTime(0,A0+fz+.02);
         if(cfg.fzs==='tone'){const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=1000;g.gain.setValueAtTime(0,A0+fz);g.gain.setValueAtTime(.06,A0+fz+.03);o.connect(g);g.connect(dd);o.start(A0+fz);o.stop(A0+T+.2)}}
-      (EER[mood]?scoreEerie(AC,dst,mood,T,cfg.vol/100*.8):score(AC,dst,mood,T,cfg.vol/100*.8));ambience(AC,dst,amb,T,.3);if(cfg.heart||cfg.hbvig)heart(AC,dst,T,.5);if(sc0>=0)sting(AC,dst,sc0,.6);if(bl)splat(AC,dst,bt,.9);if(cfg.steps!=='off')steps(AC,dst,cfg.steps,T,.5);if(cfg.whisp!=='off')whispers(AC,dst,cfg.whisp,T,cfg.whisp==='close'?.35:.16);if(cfg.creak!=='off')creaks(AC,dst,cfg.creak,T,.18);if(cfg.breath)breath(AC,dst,T,.3);if(cfg.povgore&&cfg.pov!=='off')mindVoices(AC,dst,T,.5);if(cfg.tick)tick(AC,dst,T,.25);if(cfg.riser)riser(AC,dst,sc0>=0?sc0:T*.9,.14);if(cfg.musicbox)musicbox(AC,dst,T,.12);if(cfg.chainsnd)chainsSnd(AC,dst,T,.2);if(cfg.laugh)laughSnd(AC,dst,T,.1);if(cfg.drip)dripSnd(AC,dst,T,.2);if(cfg.knock)[.25,.55].forEach(a=>knock(AC,dst,T*a,.5));if(cfg.drone!=='off')droneSnd(AC,dst,cfg.drone,T,cfg.drone==='hum'?.07:.015);stT.forEach(a=>staticSnd(AC,dst,a,.3));bkT.forEach(a=>thud(AC,dst,a,.9));pl.shots.forEach(h=>h.sfx.forEach(e=>sfxPlay(AC,dst,e.id,A0+h.t0+e.at,e.vol)));pl.blocks.forEach(b=>(b.sc.items||[]).forEach(it=>{if(it.mv)it.mv.forEach((g,gi)=>{const S0=gi?it.mv[gi-1].t:0;if(g.act==='fall'){const T0=A0+b.t0+g.t;sfxPlay(AC,dst,'grito_ayuda',T0-.5,.8);sfxPlay(AC,dst,'agonia_quejido',T0,.7);sfxPlay(AC,dst,'respiracion_agonica',T0+.9,.6)}if(g.act==='punch'){const T0=A0+b.t0+g.t;[.4,.95,1.5].forEach(d=>sfxPlay(AC,dst,'crujido_huesos',T0+d,.8))}if(g.act==='beaten')sfxPlay(AC,dst,'agonia_quejido',A0+b.t0+g.t+.1,.5);if(g.act==='horror'){const T2=A0+b.t0+g.t;sfxPlay(AC,dst,'respiracion_pesada',T2,.6);sfxPlay(AC,dst,'grito_ayuda',T2+.2,.5)}if(g.act==='recoil')sfxPlay(AC,dst,'grito_ayuda',A0+b.t0+g.t,.6);if(g.act==='brutal'){const T1=A0+b.t0+g.t;sfxPlay(AC,dst,'agonia_quejido',T1,.8);[.2,.7,1.2].forEach(d=>sfxPlay(AC,dst,'crujido_huesos',T1+d,.7))}if(SNDACT[g.act]){const QX=A0+b.t0+S0,PX=(id,d,v)=>sfxPlay(AC,dst,id,QX+d,v);
+      (EER[mood]?scoreEerie(AC,dst,mood,T,cfg.vol/100*.8):score(AC,dst,mood,T,cfg.vol/100*.8));ambience(AC,dst,amb,T,.3);if(cfg.heart)heart(AC,dst,T,.5);if(sc0>=0)sting(AC,dst,sc0,.6);if(bl)splat(AC,dst,bt,.9);if(cfg.steps!=='off')steps(AC,dst,cfg.steps,T,.5);if(cfg.whisp!=='off')whispers(AC,dst,cfg.whisp,T,cfg.whisp==='close'?.35:.16);if(cfg.creak!=='off')creaks(AC,dst,cfg.creak,T,.18);if(cfg.breath)breath(AC,dst,T,.3);if(cfg.povgore&&cfg.pov!=='off')mindVoices(AC,dst,T,.5);if(cfg.tick)tick(AC,dst,T,.25);if(cfg.riser)riser(AC,dst,sc0>=0?sc0:T*.9,.14);if(cfg.musicbox)musicbox(AC,dst,T,.12);if(cfg.chainsnd)chainsSnd(AC,dst,T,.2);if(cfg.laugh)laughSnd(AC,dst,T,.1);if(cfg.drip)dripSnd(AC,dst,T,.2);if(cfg.knock)[.25,.55].forEach(a=>knock(AC,dst,T*a,.5));if(cfg.drone!=='off')droneSnd(AC,dst,cfg.drone,T,cfg.drone==='hum'?.07:.015);stT.forEach(a=>staticSnd(AC,dst,a,.3));bkT.forEach(a=>thud(AC,dst,a,.9));pl.shots.forEach(h=>h.sfx.forEach(e=>sfxPlay(AC,dst,e.id,A0+h.t0+e.at,e.vol)));pl.blocks.forEach(b=>(b.sc.items||[]).forEach(it=>{if(it.mv)it.mv.forEach((g,gi)=>{const S0=gi?it.mv[gi-1].t:0;if(g.act==='fall'){const T0=A0+b.t0+g.t;sfxPlay(AC,dst,'grito_ayuda',T0-.5,.8);sfxPlay(AC,dst,'agonia_quejido',T0,.7);sfxPlay(AC,dst,'respiracion_agonica',T0+.9,.6)}if(g.act==='punch'){const T0=A0+b.t0+g.t;[.4,.95,1.5].forEach(d=>sfxPlay(AC,dst,'crujido_huesos',T0+d,.8))}if(g.act==='beaten')sfxPlay(AC,dst,'agonia_quejido',A0+b.t0+g.t+.1,.5);if(g.act==='horror'){const T2=A0+b.t0+g.t;sfxPlay(AC,dst,'respiracion_pesada',T2,.6);sfxPlay(AC,dst,'grito_ayuda',T2+.2,.5)}if(g.act==='recoil')sfxPlay(AC,dst,'grito_ayuda',A0+b.t0+g.t,.6);if(g.act==='brutal'){const T1=A0+b.t0+g.t;sfxPlay(AC,dst,'agonia_quejido',T1,.8);[.2,.7,1.2].forEach(d=>sfxPlay(AC,dst,'crujido_huesos',T1+d,.7))}if(SNDACT[g.act]){const QX=A0+b.t0+S0,PX=(id,d,v)=>sfxPlay(AC,dst,id,QX+d,v);
         switch(g.act){case'choke':PX('gorgoteo_corte',.3,.55);PX('respiracion_agonica',1.8,.7);PX('agonia_quejido',4.2,.5);break;
           case'strangle':PX('respiracion_pesada',.1,.5);break;
           case'convulse':PX('agonia_quejido',.2,.6);PX('respiracion_agonica',1.2,.7);PX('goteo_sangre',3,.45);break;
@@ -3266,22 +3044,18 @@ function renderCore(spec){
     rec.onstop=()=>{
       pl.blocks.forEach(b=>b.sc.S.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()}));
       R.dispose();try{R.forceContextLoss()}catch(e){}
-      LV.ac=null;LV.on=false;LV.act=false;$('#lvstop').hidden=true;stage.style.touchAction='';if(AC)try{AC.close()}catch(e){}
+      AV.ac=null;AV.dst=null;if(AC)try{AC.close()}catch(e){}
       if(err)return rej(err);
       res({url:URL.createObjectURL(new Blob(parts,{type:mt||'video/webm'})),ext:mt.includes('mp4')?'mp4':'webm'});
     };
-    show('gl');const LIVE=cfg.pov==='live';if(!LIVE)rec.start();
-    let t0=performance.now()+(LIVE?3000:0),started=!LIVE;const sh=pl.shots;let si=0,fzn=false;
-    if(LIVE){Object.assign(LV,{blk:null,stop:false,last:0,k:{},st:null,t:null,m:null,ph:0,act:true,on:false,vx:0,vz:0,vy:0,py:0,dp:0,dv:0,fk:0,sk:null,jh:false});stage.style.touchAction='none'}
+    show('gl');rec.start();
+    let t0=performance.now(),started=true;const sh=pl.shots;let si=0,fzn=false;
     (function loop(){
       try{
         const t=(performance.now()-t0)/1000;
-        if(LIVE&&!started){if(t<0)say('Prepárate… empieza en '+Math.ceil(-t)+LVH);else{started=true;rec.start();LV.on=true;LV.stop=false;LV.last=0;if(AC)AC.resume();$('#lvstop').hidden=false}}
-        if(LIVE&&started&&LV.stop){rec.stop();return}
         if(fz>=0&&t>=fz){fzn=!fzn;ctx.fillStyle=fzn?'#010101':'#000';ctx.fillRect(0,0,1,1);prog(Math.min(t/T,1));if(t>=T)rec.stop();else requestAnimationFrame(loop);return}
         while(si<sh.length-1&&t>=sh[si+1].t0)si++;
         const s=sh[si],b=s.b,ts=Math.min(Math.max(t-s.t0,0),s.d),tb=Math.max(t-b.t0,0);
-        if(LIVE&&b!==LV.blk){LV.blk=b;LV.x=b.s&&b.s.spawn?b.s.spawn[0]:0;LV.z=b.s&&b.s.spawn?b.s.spawn[1]:8;LV.yaw=Math.PI;LV.pitch=0;LV.vx=LV.vz=LV.vy=LV.py=LV.dp=LV.dv=LV.fk=0;LV.sk=null;LV.jh=false}
         b.sc.items.forEach(it=>pose(it,tb,b.dur));
         if(b.sc.fx)b.sc.fx(tb);
         if(cfg.thick&&b.sc.S.fog&&b.sc.S.fog.near!==undefined){const fg=b.sc.S.fog,u=Math.min(t/pl.total,1);
@@ -3310,7 +3084,7 @@ function renderCore(spec){
         R.render(b.sc.S,cam);
         finish(si,t);
         prog(Math.max(0,Math.min(t/T,1)));
-        if(started)say('Grabando '+Math.min(Math.ceil(t),Math.round(T))+' / '+Math.round(T)+' s'+(LIVE?LVH:''));
+        if(started)say('Grabando '+Math.min(Math.ceil(t),Math.round(T))+' / '+Math.round(T)+' s');
         if(t>=T)rec.stop();else requestAnimationFrame(loop);
       }catch(e){err=e;try{rec.stop()}catch(x){rej(e)}}
     })();
@@ -3373,83 +3147,6 @@ function drawList(){
 /* ---------- Lugar: escuela abandonada (modo exploración) ----------
    Se activa al escribir «escuela», «colegio», «instituto» o «aula» en la idea. No usa IA: monta un edificio de 30 x 30 m
    con pasillo principal, pasillo transversal, 4 aulas, baño, despacho, biblioteca y salón de actos, todo con choques. */
-const SCHOOL_RX=/\b(escuela|colegio|instituto|aulas?)\b/i;
-function schoolSpec(){
-  const O=[],HT=3.6,TH=.3,DW=1.5;let sd=11;const R=()=>(sd=sd*16807%2147483647)/2147483647;
-  const B=(c,x,y,z,w,h,d,o)=>O.push(Object.assign({shape:'box',color:c,pos:[x,y,z],scale:[w,h,d],metal:0,rough:.95},o||{}));
-  const A=(asset,x,z,ry,o,y)=>O.push(Object.assign({asset,pos:[x,y||0,z],rot:[0,ry||0,0]},o||{}));
-  // paredes con huecos de puerta: ax 'h' (a lo largo de x, z fija) o 'v' (a lo largo de z, x fija)
-  const wall=(ax,fix,a,b,gaps)=>{
-    const c='#2b2823';let s=a;const seg=(u,v)=>{if(v-u<.05)return;const m=(u+v)/2,l=v-u;ax==='h'?B(c,m,HT/2,fix,l,HT,TH):B(c,fix,HT/2,m,TH,HT,l)};
-    (gaps||[]).slice().sort((p,q)=>p-q).forEach(g=>{seg(s,g-DW/2);s=g+DW/2;const lh=HT-2.3;ax==='h'?B(c,g,2.3+lh/2,fix,DW,lh,TH):B(c,fix,2.3+lh/2,g,TH,lh,DW)});
-    seg(s,b)};
-  // hoja de puerta entreabierta (sg: hacia qué lado gira; ang: grados)
-  const door=(ax,fix,g,sg,ang)=>{const L=1.4,th=sg*ang*Math.PI/180,c='#3b2a1c';
-    if(ax==='v'){B(c,fix+Math.sin(th)*L/2,1.1,g-.7+Math.cos(th)*L/2,.06,2.2,L,{rot:[0,th*57.3,0]})}
-    else{const t2=-th;B(c,g-.7+Math.cos(t2)*L/2,1.1,fix-Math.sin(t2)*L/2,L,2.2,.06,{rot:[0,t2*57.3,0]})}};
-  // 1. Muros
-  wall('h',15,-15,15);wall('h',-15,-15,15);wall('v',-15,-15,15);wall('v',15,-15,15);
-  wall('v',-2.2,-3.3,15,[11.95,5.85,-.25]);wall('v',2.2,-3.3,15,[11.95,5.85,-.25]);
-  wall('v',-2.2,-15,-7.7,[-11.4]);wall('v',2.2,-15,-7.7,[-11.4]);
-  [8.9,2.8,-3.3].forEach(z=>{wall('h',z,-15,-2.2);wall('h',z,2.2,15)});
-  wall('h',-7.7,-15,-2.2);wall('h',-7.7,2.2,15);
-  door('v',-2.2,11.95,-1,70);door('v',-2.2,5.85,-1,35);door('v',-2.2,-.25,-1,100);door('v',2.2,11.95,1,50);door('v',2.2,5.85,1,90);door('v',2.2,-.25,1,30);
-  door('v',-2.2,-11.4,-1,60);
-  // 2. Suelo y techo (con un derrumbe sobre el cruce de pasillos)
-  O.push({shape:'plane',color:'#1e1c18',pos:[0,0,0],scale:[30,30,1],rot:[90,0,0],rough:.55,metal:.1});
-  [[-9,0,12,30],[9,0,12,30],[0,6,6,18],[0,-11.5,6,7]].forEach(q=>O.push({shape:'plane',color:'#14120e',pos:[q[0],HT,q[1]],scale:[q[2],q[3],1],rot:[90,0,0],rough:1,metal:0}));
-  O.push({shape:'rock',color:'#2c2a27',pos:[1,.3,-5.2],scale:[2.2,1,1.6],rough:1,metal:0});
-  B('#3a362f',-1.5,.35,-6.8,1.6,.12,.9,{rot:[0,20,14]});B('#2a1c10',-.2,.5,-4.2,3.4,.2,.25,{rot:[0,12,-18]});B('#2a1c10',-2,.6,-5.4,2.6,.18,.22,{rot:[0,70,-22]});
-  O.push({shape:'cylinder',color:'#8fb4ff',pos:[0,1.8,-5.5],scale:[3.2,3.6,3.2],opacity:.06,glow:.8});
-  // 3. Aulas
-  const classroom=(side,zc,board)=>{
-    if(board){B('#2a1c10',side*14.82,1.7,zc,.05,1.4,4.3);B('#0f1f17',side*14.78,1.7,zc,.05,1.25,4.1,{rough:.9});B('#4a3a2a',side*14.74,1.0,zc,.1,.06,4.1);
-      for(let i=0;i<7;i++)B('#5a0a0a',side*14.74,1.35+R()*.7,zc-1.7+R()*3.4,.02,.05,.5+R()*.6,{rot:[R()*60-30,0,0],glow:.1})}
-    [3,5,7,9].forEach(col=>[-1.8,0,1.8].forEach(dz=>{
-      if(R()<.22)return;const dx=side*(15-col)+(R()-.5)*.3,z=zc+dz+(R()-.5)*.3,over=R()<.15;
-      B('#3a2a1a',dx,over?.3:.38,z,.5,.76,1,{rot:[0,over?R()*360:(R()-.5)*14,over?90:0]});
-      B('#2e2218',dx-side*(.62+R()*.25),.22,z+(R()-.5)*.3,.4,.44,.4,{rot:[0,R()*360,R()<.2?80:0]})}));
-    B('#2b1d12',side*13.4,.4,zc+1.6,.7,.8,1.8)};
-  classroom(-1,11.95,true);classroom(-1,5.85,false);classroom(-1,-.25,true);classroom(1,11.95,true);
-  // 4. Taquillas (pasillo principal y transversal)
-  const lock=(x,z,len,ax)=>{const n=Math.round(len/.55);if(ax==='z'){const nx=x<0?1:-1;B('#2c3a38',x,.95,z,.45,1.9,len,{metal:.4,rough:.6});
-      for(let i=1;i<n;i++)B('#0a0f0e',x+nx*.23,.95,z-len/2+i*(len/n),.02,1.85,.02);B('#2c3a38',x+nx*.5,.95,z+len/2-.2,.03,1.7,.45,{rot:[0,nx*35,0]});B('#5a0a0a',x+nx*.23,1.1,z-.3,.02,.5,.3,{glow:.1})}
-    else{B('#2c3a38',x,.95,z,len,1.9,.45,{metal:.4,rough:.6});for(let i=1;i<n;i++)B('#0a0f0e',x-len/2+i*(len/n),.95,z+.23,.02,1.85,.02)}};
-  [[-1.82,8.9,2.75],[1.82,8.9,2.75],[-1.82,2.8,2.75],[1.82,2.8,2.75],[-1.82,-2.15,1.6],[1.82,-2.15,1.6]].forEach(q=>lock(q[0],q[1],q[2],'z'));
-  [[-10,-3.67,2.75],[-6,-3.67,2.2],[7,-3.67,2.75],[11,-3.67,2.2]].forEach(q=>lock(q[0],q[2]>0?q[1]:q[1],q[2],'x'));
-  // 5. Biblioteca
-  [-12.4,-9,-5.6].forEach(x=>B('#2a1c10',x,1.1,-14.55,3.2,2.2,.5));B('#2a1c10',-14.55,1.1,-11.4,.5,2.2,5);
-  B('#3a2a1a',-5.5,.4,-9.2,2.2,.8,1.2);B('#3a2a1a',-12,.4,-9.2,2.2,.8,1.2,{rot:[0,15,0]});
-  for(let i=0;i<8;i++)B(['#5a1a1a','#1a2a4a','#3a3a1a','#2a2a2a'][i%4],-14+R()*10,.04,-13+R()*5,.22,.05,.3,{rot:[0,R()*360,0]});
-  // 6. Salón de actos
-  B('#2a1c12',8.9,.3,-13.9,11.8,.6,2.2);B('#4a0c10',8.9,2,-14.7,11.8,3.2,.2,{rough:1});
-  [-11.6,-10.4,-9.2].forEach((z,i)=>[5.8,12].forEach(x=>B('#3a2a1a',x,.45,z,3.4,.9,.45,{rot:[0,(R()-.5)*(i?10:3),0]})));
-  // 7. Baño y despacho
-  [3.6,4.8,6,7.2,8.4].forEach(z=>B('#26322f',13.9,.95,z,1.5,1.9,.1));B('#cfd6d4',6,.45,3.1,2.4,.9,.5);B('#cfd6d4',11,.45,3.1,2.4,.9,.5);
-  B('#2b1d12',8,.4,-.2,1.8,.8,.8);B('#2b1d12',5.2,.7,1.8,.5,1.4,.9);B('#2b1d12',5.2,.7,-2.4,.5,1.4,.9);
-  // 8. Ventanas (la poca luz azul del exterior)
-  [-6.5,-4.5].forEach(z=>[-1,1].forEach(s=>B('#0b1a28',s*14.84,1.9,z,.04,1.5,1.2,{glow:.35,opacity:.75})));
-  [-10,-7.2,7.2,10].forEach(x=>B('#0b1a28',x,1.9,14.84,1.4,1.5,.04,{glow:.35,opacity:.75}));
-  // 9. Entrada condenada y puerta del fondo
-  B('#2a1d12',-.85,1.2,14.78,1.6,2.4,.1);B('#2a1d12',.85,1.2,14.78,1.6,2.4,.1);B('#3a2a1a',0,1.3,14.7,4.2,.18,.08,{rot:[0,0,28]});B('#3a2a1a',0,1.3,14.7,4.2,.18,.08,{rot:[0,0,-28]});B('#6b6b6b',0,1.2,14.68,2,.06,.06,{metal:.8});
-  B('#2a1d12',0,1.2,-14.75,1.8,2.4,.1);B('#6b0610',0,1.4,-14.68,.18,2.6,.04,{rot:[0,0,40],glow:.2});B('#6b0610',0,1.4,-14.68,.18,2.6,.04,{rot:[0,0,-40],glow:.2});
-  // 10. Papeles y restos
-  for(let i=0;i<20;i++)B('#bdb5a0',(R()-.5)*3.6+(i%4===0?(R()-.5)*20:0),.012,i%4===0?-5.5+(R()-.5)*3:13-R()*28,.3,.01,.4,{rot:[0,R()*180,0],rough:1});
-  // 11. Lo macabro (asset), de lo esencial a lo extra
-  A('hanged',0,-1);A('dolls',-4.2,10.2);A('wallfaces',-14.45,5.85,90);A('bloodwall',-9,2.62,180);A('eyewall',9,14.7,180);A('mirror',9.2,3.0,0);
-  A('saltcircle',-8.8,-11.4);A('altar',8.9,-13.6,0,null,.6);A('jars',14.35,-.3,270);A('pentagram',0,-13.3,0,{scale:1.2},.03);
-  A('chains',-8,-5.5);A('skullpile',-13.2,-6.8);A('rats',12.4,-4.6);A('head',13.4,-6.2);A('cobweb',-10,-7.5,0);A('cobweb',9,-7.5,0);A('crows',1.2,-13.2);A('limb',-1,9);
-  [[0,7.5],[-1,-1.2],[0,-9.5],[-8,-5.5],[10,-6],[8,5.8]].forEach(q=>A('puddle',q[0],q[1],R()*360,{color:'#5a0a12'},.01));
-  A('trail',0,3,90);A('trail',-3.6,-5.5,0);A('candle',-9.6,-10.4);A('candle',-8,-12.4);A('candle',7.6,-13.4,0,null,.6);A('candle',10.2,-13.4,0,null,.6);
-  return{title:'Escuela abandonada',look:'horror',music:'dread',scenes:[{weather:'dust',background:'#020304',fog:{color:'#05070a',near:2.5,far:17},ambient:.16,sun:{color:'#7f95c8',intensity:.04,pos:[-4,8,3]},big:true,spawn:[0,12.2],
-    lights:[{type:'spot',color:'#8fb4ff',pos:[0,3.4,-5.5],look:[0,0,-5.5],intensity:1.6},{type:'point',color:'#ff2418',pos:[0,3,-12.5],intensity:1.1},{type:'point',color:'#ff9a40',pos:[-8.8,1.2,-11.4],intensity:1},{type:'point',color:'#6bff8a',pos:[-8,2.4,-.25],intensity:.8}],
-    objects:O,shots:[{dur:10,camera:{move:'static',distance:6},caption:''},{dur:10,camera:{move:'static',distance:6},caption:''},{dur:10,camera:{move:'static',distance:6},caption:''},{dur:10,camera:{move:'static',distance:6},caption:''}]}]}}
-
-/* ---------- Escena de muestra (sin IA): «La ruta del norte» ----------
-   Se activa al escribir «auto» o «coche» junto con «ruta», «carretera», «camino» o «choque». Dura unos 17 s: un coche
-   avanza por una carretera de tierra llena de baches, piedras y árboles muertos, choca contra un árbol en mitad de la
-   calzada (golpe de sonido y sacudida de cámara) y después la cámara se queda con los restos y con lo que camina hacia ellos.
-   No usa IA. */
 const ROAD_RX=/\b(auto|coche)\b/i,ROAD_RX2=/\b(ruta|carretera|camino|chocar|choque|chocamos|chocan|choca)\b/i;
 function roadSpec(){
   const W=(shape,color,pos,scale,x)=>Object.assign({shape,color,pos,scale},x||{}),A=(asset,pos,o)=>Object.assign({asset,pos},o||{});
@@ -3481,64 +3178,17 @@ function roadSpec(){
   ]};
 }
 
-/* ---------- Cortometraje de muestra (sin IA): «La vigilia» ----------
-   Se activa al escribir «vigilia», «velatorio» o «corto de muestra» en la idea. Dura 36 s y enseña los movimientos macabros
-   (creep, peek, plead, choke/strangle, convulse, rise, possess, worship, sob, scream) y las cámaras creep y vertigo.
-   Sirve también de guion de referencia: la muerte tiene tres tiempos, el muerto despierta y lo que da miedo es lo que ve ella. */
-const VIGIL_RX=/\b(vigilia|velatorio|cortos?\s+de\s+muestra|cortometraje\s+de\s+muestra)\b/i;
-function vigiliaSpec(){
-  const W=(shape,color,pos,scale,x)=>Object.assign({shape,color,pos,scale},x),A=(asset,pos,o)=>Object.assign({asset,pos},o||{});
-  const HP=[-1.7,0,3.1],VP=[1.4,0,-3],KP=[1.4,0,-2];
-  const mv=(P,L)=>L.map(q=>Object.assign({to:P},q));
-  const cult=(id,x,z)=>({asset:'cultist',id,pos:[x,0,z],moves:[{t:60,to:[x,0,z],act:'worship',face:'coffin'}]});
-  const doc={asset:'plague',id:'dr',pos:[0,0,-8.6],moves:[{t:60,to:[0,0,-8.6],act:'worship',face:'hero'}]};
-  const room=()=>[
-    W('plane','#1b1614',[0,0,-2],[12,20,1],{rot:[-90,0,0]}),
-    W('box','#2a2320',[0,2.5,-12],[12.4,5,.4]),W('box','#241e1b',[-6.1,2.5,-2],[.4,5,20]),W('box','#241e1b',[6.1,2.5,-2],[.4,5,20]),
-    W('box','#9fb8ff',[-5.88,3.1,-3.5],[.05,1.9,.9],{glow:1.3}),W('box','#9fb8ff',[5.88,3.1,-6.5],[.05,1.9,.9],{glow:1.3}),
-    W('cylinder','#3a322d',[-2.4,2.5,3.4],[.7,5,.7]),W('cylinder','#3a322d',[2.4,2.5,3.4],[.7,5,.7]),
-    A('altar',[0,0,-10.2],{id:'altar'}),A('coffin',[0,0,-6.2],{id:'coffin'}),A('pentagram',[0,.02,-6.2],{scale:1.4}),
-    ...[[-4.2,-3],[4.2,-3],[-4.2,-8.6],[4.2,-8.6],[-3,-1.2],[3,-1.2],[-2.4,-10.6],[2.4,-10.6]].map(q=>A('candle',[q[0],0,q[1]])),
-    A('skullpile',[-4.6,0,-11]),A('wallfaces',[3.6,0,-11.6]),A('chains',[4.9,0,-5.6]),A('puddle',[1.4,.01,-3.9],{color:'#5a0a12'})];
-  const scene=(chars,shots)=>({weather:'dust',background:'#05070a',fog:{color:'#07090d',near:3,far:20},ambient:.18,sun:{color:'#7f95c8',intensity:.05,pos:[-4,8,3]},big:true,
-    lights:[{type:'point',color:'#ff2a1a',pos:[0,2.2,-6],intensity:1.3},{type:'point',color:'#ff9a40',pos:[-3,1.3,-3],intensity:.9},{type:'point',color:'#ff9a40',pos:[3,1.3,-3],intensity:.9},
-      {type:'spot',color:'#8fb4ff',pos:[-5.5,4,-3.5],look:[0,0,-3],intensity:1.4},{type:'point',color:'#a8bfff',pos:[0,3,6],intensity:.5}],
-    objects:[...chars,...room()],shots});
-  const crowd=[cult('c1',-3,-6.2),cult('c2',3,-6.2),cult('c3',-1.8,-8.8),cult('c4',1.8,-8.8),doc];
-  const hero1={asset:'person',id:'hero',color:'#cfd6e8',color2:'#4a5575',scale:.95,pos:[0,0,8],moves:[
-    {t:5,to:HP,act:'creep'},{t:8,to:HP,act:'peek'},{t:12,to:HP,act:'horror',face:'kil'},{t:15,to:HP,act:'recoil'},{t:60,to:HP,act:'sob'}]};
-  const vic1={asset:'person',id:'vic',color:'#d9a441',color2:'#5c3a22',pos:VP,moves:mv(VP,[{t:7.5,act:'plead',face:'kil'},{t:13.5,act:'choke'},{t:15.1,act:'fall'},{t:60,act:'convulse'}])};
-  const kil={asset:'person',id:'kil',color:'#1e1e24',color2:'#121216',pos:KP,moves:mv(KP,[{t:7.5,act:'idle',face:'vic'},{t:13.7,act:'strangle',face:'vic'},{t:60,act:'idle',face:'vic'}])};
-  const s1=scene([hero1,vic1,kil,...crowd],[
-    {dur:4,camera:{from:[0,4.6,10.5],to:[0,3.7,8.8],look:[0,1.3,-4],fov:42,shake:.1},caption:'La capilla lleva años cerrada.',transition:'fade',sfx:[{id:'drone_grave',at:0,vol:.5}]},
-    {dur:4,camera:{move:'creep',size:'medium',follow:'hero',distance:5.5,height:1.8,angle:15,fov:40},caption:'Nadie se mueve. Nadie respira.',sfx:[{id:'puerta_cruje',at:.3,vol:.45}]},
-    {dur:4,camera:{move:'creep',size:'close',follow:'vic',distance:2.8,height:1.5,angle:-30,fov:30,shake:.2},caption:'',sfx:[{id:'latido_lento',at:0,vol:.5}]},
-    {dur:4,camera:{from:[3.6,.7,-1.4],to:[3.1,.5,-2.2],look:[1.4,.25,-4],fov:38,shake:.35},caption:''},
-    {dur:6,camera:{move:'vertigo',size:'close',follow:'hero',distance:3.6,height:1.7,angle:200,fov:30},caption:'Ahora sabe por qué cantan.'}]);
-  const hero2={asset:'person',id:'hero',color:'#cfd6e8',color2:'#4a5575',scale:.95,pos:HP,moves:mv(HP,[{t:6.5,act:'sob'},{t:9.5,act:'scream',face:'vic'},{t:60,act:'plead',face:'vic'}])};
-  const vic2={asset:'person',id:'vic',color:'#d9a441',color2:'#5c3a22',pos:VP,moves:mv(VP,[{t:4,act:'convulse'},{t:8,act:'rise',face:'hero'},{t:60,act:'possess',face:'hero'}])};
-  const kil2={asset:'person',id:'kil',color:'#1e1e24',color2:'#121216',pos:KP,moves:mv(KP,[{t:60,act:'worship',face:'vic'}])};
-  const s2=scene([hero2,vic2,kil2,...crowd],[
-    {dur:4,camera:{from:[3.4,.55,-1.2],to:[2.7,.4,-2.1],look:[1.4,.3,-4.1],fov:36,shake:.15},caption:'',transition:'fade',sfx:[{id:'drone_grave',at:0,vol:.5}]},
-    {dur:4,camera:{move:'creep',size:'medium',follow:'vic',distance:4.8,height:1.1,angle:-55,fov:38},caption:''},
-    {dur:3,camera:{move:'static',size:'close',follow:'hero',distance:2.2,height:1.6,angle:200,fov:30,shake:.45},caption:''},
-    {dur:3,camera:{from:[0,5,10.8],to:[0,3.3,8],look:[0,1.3,-3],fov:44},caption:'Él no era el sacrificio. Era la puerta.',sfx:[{id:'campana_oxidada',at:1.2,vol:.55}]}]);
-  return{title:'La vigilia',look:'horror',music:'dread',scenes:[s1,s2]}}
-
 async function run(){
-  const txt=$('#prompt').value.trim(),p=cfg.prov,key=cfg.keys[p]||'',model=cfg.models[p]||P[p].model||'',school=cfg.tpl==='off'&&SCHOOL_RX.test(txt),vig=cfg.tpl==='off'&&!school&&VIGIL_RX.test(txt),road=cfg.tpl==='off'&&!school&&!vig&&ROAD_RX.test(txt)&&ROAD_RX2.test(txt);
-  if(!txt&&cfg.tpl==='off'){say('Escribe primero una idea para el video.');$('#prompt').focus();return}
-  if(cfg.tpl==='off'&&p!=='local'&&!key&&!school&&!vig&&!road){say('Falta la clave de API. Añádela en Configuración.');setMenu(true);return}
-  if((cfg.tpl!=='off'||p==='local'||P[p].llm||school||vig||road)&&!window.THREE){say('No se pudo cargar Three.js. Revisa tu conexión a internet.');return}
+  const txt=$('#prompt').value.trim(),p=cfg.prov,key=cfg.keys[p]||'',model=cfg.models[p]||P[p].model||'',road=ROAD_RX.test(txt)&&ROAD_RX2.test(txt);
+  if(!txt){say('Escribe primero una idea para el video.');$('#prompt').focus();return}
+  if(p!=='local'&&!key&&!road){say('Falta la clave de API. Añádela en Configuración.');setMenu(true);return}
+  if((p==='local'||P[p].llm||road)&&!window.THREE){say('No se pudo cargar Three.js. Revisa tu conexión a internet.');return}
   const full=(S[cfg.style]||'')+txt;
   $('#go').disabled=true;$('#out').hidden=true;vid.pause();show('idle');say('Enviando…');prog(p==='local'?0:'ind');
-  let SV=null;if(school){SV={pov:cfg.pov,torch:cfg.torch,dur:cfg.dur,life:cfg.life};cfg.pov='live';cfg.life='off';if(cfg.torch==='off')cfg.torch='shaky';cfg.dur=Math.max(cfg.dur,120)}else if(vig){SV={dur:cfg.dur,pov:cfg.pov};cfg.pov='off';cfg.dur=36}
+  let SV=null;
   try{
     let url,ext='mp4';
-    if(school){say('Escuela abandonada: camina con W A S D y Espacio para saltar, o con los dedos. Pulsa «Terminar» para guardar.');({url,ext}=await render(schoolSpec()))}
-    else if(vig){say('Cortometraje de muestra: «La vigilia» (36 s).');({url,ext}=await render(vigiliaSpec()))}
-    else if(road){say('Carretera de noche: un coche, una ruta fea y un choque (unos 17 s).');({url,ext}=await render(roadSpec()))}
-    else if(cfg.tpl!=='off'){({url,ext}=await render(spec333()))}
+    if(road){say('Carretera de noche: un coche, una ruta fea y un choque (unos 17 s).');({url,ext}=await render(roadSpec()))}
     else if(p==='local'){({url,ext}=await render(localSpec(txt)))}
     else if(P[p].llm){say($('#edit').checked&&last?'La IA está retocando la película…':'La IA está dirigiendo la película…');let sp=await genScene(p,txt,key,model);if(cfg.review){prog(0);say('Revisa el guion y pulsa «Grabar película».');sp=await review(sp)};({url,ext}=await render(sp));last=sp;$('#edit').disabled=false}
     else if(p==='fal')url=await genFal(full,model,key);
@@ -3551,73 +3201,56 @@ async function run(){
     say(e instanceof TypeError?'No se pudo conectar con el servicio. Revisa tu conexión y tu clave; algunos servicios bloquean llamadas desde el navegador (CORS). Prueba otro motor.':e.message);
   }finally{if(SV)Object.assign(cfg,SV);$('#go').disabled=false;prog(0)}
 }
-$('#go').onclick=run;
 /* ---------- Automático total: la IA decide todos los ajustes ---------- */
-const AK=['genre','look','music','tod','fx','amb','trans','hand','lens','bars','fps','flick','scare','stalk','gore','eyes','steps','whisp','torch','pov','beast','life','htheme','hend','hbeat','hext','hthr','hvic','hshow','gx','gy','cmode','view','stat','card','drone','creak','blackout','zoom','tilt','povlook','povbob','tsize','cam','nights','wake','frz','fzs','subs','subsz','mac','bmsg'],AB=['heart','vhs','lensblood','breath','tick','thick','subl','endc','musicbox','knock','hush','riser','hbvig','sanity','rtitle','povhands','povgore','vig','grain','blur','env','atk','cred','chainsnd','laugh','drip','lids'];
-const aopt=k=>[...$('#'+k).options].map(o=>o.value).filter(v=>v!=='auto'&&(v!=='live'||k==='cam'));
-const autoSys=()=>`Eres el director de un estudio de cine de terror 3D. Con la idea del usuario decide TÚ todos los ajustes para que la película dé el mayor miedo posible: nadie más elegirá nada. Responde SOLO con JSON válido, sin texto adicional:
-{"dur":${+cfg.autodur?cfg.autodur:'número entre 20 y 45'},${AK.map(k=>'"'+k+'":"valor"').join(',')},${AB.map(k=>'"'+k+'":true|false').join(',')},"corto333":true|false,"why":"una frase"}
+const aopt=k=>[...$('#'+k).options].map(o=>o.value).filter(v=>v!=='auto');
+const AK=['genre','look','music','tod','fx','amb','trans','hand','lens','bars','fps','beast','life','subs','subsz'],AB=['cred','vig','grain','blur','env','atk'];
+const autoSys=()=>`Eres el director de un estudio de cine 3D que hace cualquier tipo de película o cortometraje: comedia, drama, acción, romance, ciencia ficción, cuento infantil, documental u otra cosa que pida la idea. Con la idea del usuario decide TÚ todos los ajustes para que la película funcione como película: nadie más elegirá nada. Responde SOLO con JSON válido, sin texto adicional:
+{"dur":${+cfg.autodur?cfg.autodur:'número entre 15 y 45'},${AK.map(k=>'"'+k+'":"valor"').join(',')},${AB.map(k=>'"'+k+'":true|false').join(',')},"why":"una frase"}
 VALORES PERMITIDOS (usa solo estos):
 ${AK.map(k=>k+': '+aopt(k).join('|')).join('\n')}
 ${+cfg.autodur?`DURACIÓN FIJADA POR EL USUARIO: la película dura exactamente ${cfg.autodur} s; pon "dur":${cfg.autodur} y ajusta el ritmo a esa duración.
-`:''}CRITERIOS: elige "stalk" según la criatura de la idea; "pov":"on" solo si pide primera persona o exploración; usa "off" en lo que no aporte; combina luz, sonido, cámara y criaturas con coherencia y un solo tono de miedo; "beast":"both" salvo que la idea pida otra cosa. Usa TODAS las herramientas que sumen miedo (criatura, luz, cámara, sonido, imagen, apagón, tarjetas) y apaga las que contradigan el tono. en terror usa siempre gx en some y lensblood; hext en bloody o macabre; gy solo si la idea pide sangre o violencia.
-HERRAMIENTAS EXTRA (también son tuyas): cam lapse o live añade la pantalla de cámara de seguridad (REC, fecha y hora; lapse acelera las noches hasta el suceso, con nights y wake para el número de noches y la hora); frz congela el final y fzs elige pitido o silencio; subs y subsz ponen subtítulos cuando la historia necesita contar algo; cred añade créditos finales (no con frz); blur suaviza el movimiento; env hace que personajes y criaturas esquiven obstáculos y abran puertas; atk activa ataques y combate; corto333 true SOLO si la idea es la persona que se graba durmiendo y se levanta a las 3:33 (prepara ese corto entero y el resto se ignora). Para un accidente de coche usa la receta de carretera.
-HERRAMIENTAS MACABRAS NUEVAS: mac some o all reparte guillotina, horca, dama de hierro, mesa de operaciones, estacas o pozo (úsalo en rituales, ejecuciones, hospitales, laboratorios o cementerios); bmsg escribe un mensaje con sangre a mitad de la película (huye, atras, aqui, ayuda o tarde) y sirve de giro; chainsnd para calabozos, fantasmas o prisiones; laugh para muñecas, payasos o niños; drip para sótanos, pozos y mataderos; lids para primera persona, posesión o sueño.
-RECETAS (combina una, no mezcles tonos):
-- Casa embrujada: look cold, tod night, fx mist, amb wind, music mystery, musicbox true, creak rare, flick soft, stalk ghost o doll, whisp far, thick true, tilt soft, bars 2.39, htheme house.
-- Persecución o slasher: look horror, fx rain, amb rain, hand handheld, lens wide, steps near, heart true, stalk monster o clown, scare mid, hbeat fast, trans cut.
-- Metraje encontrado: view cam o webcam, stat some, card found, endc true, vhs true, hand handheld, torch shaky, music none, knock true.
-- Primera persona: pov on, povlook glance, torch shaky, hush y riser true, blackout mid, sanity true, eyes few, breath true.
-- Ritual o culto: mac some, chainsnd true, hthr cult, hext macabre, stalk skeleton o monster, look horror, fx mist, drone hum, htheme cemetery.
-- Infección: hthr infect, stalk zombie, steps near, whisp close, hvic group o mass.
-- Posesión o psicológico: hthr possess, stalk doll, tilt grow, zoom in, sanity true, music none, drone tinnitus, hend twist, hshow off.
-- Bosque o campo: htheme forest, stalk slender o scarecrow, fx mist, eyes few, steps slow, thick true.
-- Laboratorio: htheme lab, hthr exper, stalk monster o spider, flick hard, drone hum.
-- Vigilancia: cmode ceiling, view cam, stat many, tick true.
-- Accidente de carretera: htheme road, look cold, tod night, fx rain, amb rain, hand handheld, lens wide, steps near, heart true, hext bloody, gx some, lensblood true, scare mid, hbeat fast, trans cut, atk true.
-- Cámara del dormitorio (persona que se levanta a las 3:33): corto333 true.`;
+`:''}CRITERIOS: elige "genre" según lo que pide la idea ("none" solo si ninguno encaja). Elige "look", "music", "tod", "fx", "trans" y "hand" según el ánimo y el género. "beast" en "off" salvo que la idea tenga animales o criaturas; "env" en true si los personajes deben moverse entre objetos sin atravesarlos; "atk" en true solo si la idea pide pelea. Usa "off" o false en lo que no aporte. Un solo tono por película, coherente de principio a fin.
+HERRAMIENTAS EXTRA: subs y subsz ponen subtítulos cuando la historia necesita contar algo; blur suaviza el movimiento; vig y grain dan acabado de cine; bars da formato panorámico; cred añade créditos finales.
+RECETAS (elige una y ajústala a la idea):
+- Comedia: genre comedy, look natural, music joy, tod noon, trans wipe, hand steady, lens normal, fps 30.
+- Acción: genre action, look cold, music epic, tod sunset, fx dust, hand handheld, lens wide, bars 2.39, fps 24, trans cut, atk true.
+- Romance: genre romance, look warm, music calm, tod sunset, fx embers, trans fade, hand steady, lens normal.
+- Ciencia ficción: genre scifi, look neon, music tense, tod night, trans wipe, hand handheld, lens wide, bars 2.39.
+- Cuento infantil: genre kids, look warm, music calm, tod dawn, trans fade, hand steady, fx none.
+- Drama: genre drama, look cold, music calm, tod night, trans fade, bars 2.39, subs white.
+- Documental o naturaleza: genre documentary, look natural, music none, hand steady, lens normal, fx none, trans cut.
+- Accidente o choque: fx rain, hand handheld, lens wide, trans cut, look cold, tod night, atk false.`;
 function applyAuto(a){
-  Object.assign(cfg,HB,{eyes:'off',creak:'off',breath:false,tick:false,thick:false,zoom:'off',tilt:'off',vig:true,grain:true,blur:false,cred:false,env:true,atk:true,cam:'off',nights:'3',frz:'off',fzs:'tone',wake:'03:33',subs:'white',subsz:'38'});
+  Object.assign(cfg,HB,{env:true,atk:false,vig:true,grain:true,blur:false,cred:false,subs:'white',subsz:'38'});
   AK.forEach(k=>{if(typeof a[k]==='string'&&aopt(k).includes(a[k]))cfg[k]=a[k]});
   AB.forEach(k=>{if(typeof a[k]==='boolean')cfg[k]=a[k]});
-  cfg.dur=Math.min(60,Math.max(10,Math.round(+a.dur)||30));
-  if(!cfg.genre||cfg.genre==='none')cfg.genre='horror';
-  if(cfg.pov==='on')Object.assign(cfg,{povhands:true,povgore:true,hush:true,riser:true,hbvig:true});
-  if(a.corto333===true)Object.assign(cfg,P333());
+  cfg.dur=Math.min(60,Math.max(10,Math.round(+a.dur)||25));
 }
 function autoLocal(t){
-  const x=t.toLowerCase(),has=r=>r.test(x),key=has(/c[aá]mara|grabaci[oó]n|metraje|found|casero/)?'found':has(/primera persona|explor|recorr/)?'pov':has(/asesin|cuchill|sangre|matar|slasher|psic[oó]pata/)?'slasher':'gothic';
+  const x=t.toLowerCase(),has=r=>r.test(x);
+  const key=has(/comedi|chiste|gracios|divertid|risa|chistoso/)?'comedy':has(/acci[oó]n|persecu|pelea|explosi|carrera|disparo|lucha/)?'action':has(/romanc|amor|beso|cita|boda|enamor/)?'romance':has(/espacio|cohete|robot|futur|planeta|nave|ciencia|extraterrestre/)?'scifi':has(/ni[nñ]o|cuento|infantil|animalito|dibujo|f[aá]bula/)?'kids':has(/documental|naturaleza|paisaje|reportaje|c[oó]mo funciona/)?'docu':has(/noche|luna|estrella|oscur/)?'night':'day';
   Object.assign(cfg,PRE[key]);
-  const m=[[/payas/,'clown'],[/mu[nñ]eca/,'doll'],[/ara[nñ]a/,'spider'],[/esquelet/,'skeleton'],[/hombre alto|sin rostro|slender/,'slender'],[/zomb/,'zombie'],[/espantap/,'scarecrow'],[/fantasma|esp[ií]ritu/,'ghost'],[/doctor de la peste|m[eé]dico de la peste|m[aá]scara de pico|peste/,'plague'],[/monstruo|bestia|demonio|criatura/,'monster']].find(a=>a[0].test(x));
-  if(m)cfg.stalk=m[1];
-  const th=[[/bosque|selva/,'forest'],[/cementerio|tumba/,'cemetery'],[/carretera|autopista|coche/,'road'],[/laboratorio|experimento/,'lab'],[/casa|mansi[oó]n|dormitorio|habitaci[oó]n/,'house']].find(a=>a[0].test(x));
-  if(th)cfg.htheme=th[1];
-  if(has(/ritual|culto|secta/))Object.assign(cfg,{hthr:'cult',hext:'macabre',drone:'hum'});
-  if(has(/infecci|virus|contagio|apocalipsis/))Object.assign(cfg,{hthr:'infect',stalk:'zombie',whisp:'close'});
-  if(has(/pose[ií]d|exorcis/))Object.assign(cfg,{hthr:'possess',stalk:'doll',tilt:'grow',drone:'tinnitus',sanity:true});
-  if(has(/experimento|laboratorio/))Object.assign(cfg,{hthr:'exper',flick:'hard',drone:'hum'});
-  if(has(/guillotin|horca|ahorcad|verdugo|ejecuci|tortura|calabozo|inquisici/))Object.assign(cfg,{mac:'all',chainsnd:true,drip:true});
-  if(has(/hospital|quir[oó]fano|cirug|operaci[oó]n|manicomio|disecci/))Object.assign(cfg,{mac:'some',drip:true,lids:true});
-  if(has(/pozo|aljibe/))Object.assign(cfg,{mac:'some',drip:true});
-  if(has(/ni[nñ]o|ni[nñ]a|infantil/))cfg.laugh=true;
-  if(has(/mensaje|escrito en la pared|escrito con sangre|nota de sangre/))cfg.bmsg='atras';
-  if(has(/chocar|choque|choca|accidente|volcar|volc[oó]/))Object.assign(cfg,{htheme:'road',fx:'rain',hand:'handheld',lens:'wide',hext:'bloody',gx:'some',lensblood:true,heart:true});
+  if(has(/lluvia|llueve|tormenta/))Object.assign(cfg,{fx:'rain',amb:'rain'});
+  if(has(/nieve|nevando/))Object.assign(cfg,{fx:'snow',amb:'wind'});
+  if(has(/luci[eé]rnaga/))Object.assign(cfg,{fx:'fireflies',amb:'night'});
+  if(has(/\bmar\b|playa|oc[eé]ano|costa/))cfg.amb='sea';
+  if(has(/chocar|choque|choca|accidente|volcar|volc[oó]/))Object.assign(cfg,{fx:'rain',amb:'rain',hand:'handheld',lens:'wide',trans:'cut',tod:'night'});
 }
 async function runAuto(){
-  const txt=$('#prompt').value.trim(),p=cfg.prov,key=cfg.keys[p]||'',model=cfg.models[p]||P[p].model||'',B=[$('#go'),$('#auto')];
+  const txt=$('#prompt').value.trim(),p=cfg.prov,key=cfg.keys[p]||'',model=cfg.models[p]||P[p].model||'',B=$('#go');
   if(!txt){say('Escribe primero una idea para el video.');$('#prompt').focus();return}
   if(P[p].llm&&!key){say('Falta la clave de API. Añádela en Configuración.');setMenu(true);return}
-  B.forEach(b=>b.disabled=true);
+  if($('#edit').checked&&last)return run();
+  B.disabled=true;
   try{
     if(P[p].llm){prog('ind');say('La IA está decidiendo todos los ajustes…');try{applyAuto(parseJ(await ask(p,key,model,autoSys(),txt)))}catch(e){autoLocal(txt)}}
-    else if(p==='local')autoLocal(txt);
+    else autoLocal(txt);
     if(+cfg.autodur)cfg.dur=Math.min(60,Math.max(10,+cfg.autodur));
-    Object.assign(cfg,{tpl:cfg.tpl==='bedroom'&&cfg.cam==='lapse'?'bedroom':'off',review:false,story:true});$('#edit').checked=false;save();fill();
-    B[0].disabled=false;await run();
-    if(cfg.tpl!=='off'){cfg.tpl='off';save();fill()}
-  }finally{B.forEach(b=>b.disabled=false);prog(0)}
+    Object.assign(cfg,{review:false,story:true});$('#edit').checked=false;save();fill();
+    B.disabled=false;await run();
+  }finally{B.disabled=false;prog(0)}
 }
-$('#auto').onclick=runAuto;
+$('#go').onclick=runAuto;
 $('#autodur').onchange=e=>{cfg.autodur=e.target.value;save()};
 
 $('#load').onclick=loadModels;
