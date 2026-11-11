@@ -29,7 +29,15 @@
   </section>
   <div class="compose">
     <textarea id="prompt" aria-label="Idea del video" placeholder="Un robot de cerámica camina por una playa al amanecer"></textarea>
-    <div class="btns"><button class="go" id="go">Generar video</button><button class="go auto" id="auto" title="La IA elige todo el terror: criatura, luz, cámara, sonido, imagen, sangre y duración; tú solo das la idea">✨ Automático</button></div>
+    <div class="btns"><button class="go" id="go">Generar video</button><button class="go auto" id="auto" title="La IA elige todo el terror: criatura, luz, cámara, sonido, imagen y, si quieres, también la duración; tú solo das la idea">✨ Automático</button>
+      <select id="autodur" class="autodur" aria-label="Duración del video en Automático" title="Duración del video en modo Automático">
+        <option value="ai">Duración: la IA decide</option>
+        <option value="15">Duración: 15 s</option>
+        <option value="20">Duración: 20 s</option>
+        <option value="30">Duración: 30 s</option>
+        <option value="45">Duración: 45 s</option>
+        <option value="60">Duración: 60 s</option>
+      </select></div>
   </div>
   <section id="rv" hidden aria-label="Guion de la película">
     <h2>Guion de la película</h2>
@@ -156,6 +164,7 @@
         <option value="skeleton">Esqueleto</option>
         <option value="scarecrow">Espantapájaros</option>
         <option value="slender">Hombre alto sin rostro</option>
+        <option value="plague">Doctor de la peste</option>
         <option value="zombie">Zombi</option>
         <option value="tentacle">Tentáculos</option>
         <option value="pentagram">Pentagrama de sangre</option>
@@ -163,6 +172,26 @@
         <option value="pumpkin">Calabaza con luz</option>
         <option value="candle">Vela</option>
         <option value="bat">Murciélago</option>
+        <option value="skullpile">Pila de calaveras</option>
+        <option value="chains">Cadenas con grilletes</option>
+        <option value="cobweb">Telaraña</option>
+        <option value="rats">Ratas royendo</option>
+        <option value="bloodwall">Muro con manos sangrientas</option>
+        <option value="cage">Jaula colgante</option>
+        <option value="jars">Frascos con ojos y cerebros</option>
+        <option value="dolls">Muñecas ahorcadas</option>
+        <option value="wallfaces">Rostros en la pared</option>
+        <option value="eyewall">Muro de ojos</option>
+        <option value="mirror">Espejo con silueta</option>
+        <option value="eyetree">Árbol con ojos y boca</option>
+        <option value="crows">Cuervos sobre un cuerpo atado</option>
+        <option value="saltcircle">Círculo ritual de sal</option>
+        <option value="guillotine">Guillotina</option>
+        <option value="gallows">Horca</option>
+        <option value="ironmaiden">Dama de hierro</option>
+        <option value="operating">Mesa de operaciones</option>
+        <option value="stakes">Estacas con calaveras</option>
+        <option value="well">Pozo con manos</option>
       </optgroup>
     </select>
     <label for="move">Movimiento</label>
@@ -386,6 +415,7 @@
       <option value="spider">Araña gigante</option>
       <option value="skeleton">Esqueleto</option>
       <option value="slender">Hombre alto sin rostro</option>
+      <option value="plague">Doctor de la peste</option>
       <option value="zombie">Zombi</option>
       <option value="scarecrow">Espantapájaros</option>
       <option value="ghost">Fantasma</option>
@@ -510,7 +540,7 @@
   </div>
   <div data-p="render">
     <h3>Primera persona</h3>
-    <p class="hint">La cámara pasa a ser los ojos del protagonista (el «hero» si usas IA). Si no hay personaje, camina sola por la escena. Ideal con linterna, respiración y pasos. Con «Caminar yo» manejas tú: WASD o flechas, ratón (clic para capturarlo) y Mayús para correr; en el móvil, arrastra con el pulgar izquierdo para moverte (más lejos, corres) y con el derecho para mirar. Hay una cuenta de 3 s y grabas hasta que acabe la duración o pulses «Terminar».</p>
+    <p class="hint">La cámara pasa a ser los ojos del protagonista (el «hero» si usas IA). Si no hay personaje, camina sola por la escena. Ideal con linterna, respiración y pasos. Con «Caminar yo» manejas tú: WASD o flechas, ratón (clic para capturarlo) y Mayús para correr, Espacio para saltar (chocas con muros, árboles y cajas, y puedes saltar sobre lo bajo); en el móvil, arrastra con el pulgar izquierdo para moverte (más lejos, corres) y con el derecho para mirar. Hay una cuenta de 3 s y grabas hasta que acabe la duración o pulses «Terminar».</p>
     <label for="pov">34 · Cámara en primera persona</label>
     <select id="pov"><option value="off">Desactivada</option><option value="on">Ver por los ojos del protagonista</option><option value="live">Caminar yo: teclado, ratón o dedos (grabo en vivo)</option></select>
     <div class="two" style="margin-top:10px">
@@ -518,6 +548,7 @@
       <select id="povbob" aria-label="Forma de moverse"><option value="walk">Camina</option><option value="sneak">Sigiloso</option><option value="run">Corre</option></select>
     </div>
     <label class="chk"><input type="checkbox" id="povhands"> Mostrar mano y linterna en pantalla</label>
+    <label class="chk"><input type="checkbox" id="povgore"> Detalles macabros en primera persona (mano herida, sangre en la lente, pensamientos)</label>
     <h3>Terror avanzado</h3>
     <label for="hush">35 · Suspenso sonoro</label>
     <label class="chk"><input type="checkbox" id="hush"> Silencio justo antes del susto</label>
@@ -557,10 +588,13 @@
     <label for="beast">46 · Instinto de las criaturas</label>
     <select id="beast"><option value="both">Salvajes e inteligentes</option><option value="wild">Solo salvajes</option><option value="smart">Solo inteligentes</option><option value="off">Normales</option></select>
     <p class="hint">Salvajes: se crispan, embisten de golpe y mueven las extremidades más rápido. Inteligentes: te miran siempre, se acercan solo cuando no los ves (como una estatua que avanza si parpadeas) y, si usas IA, el guion les da emboscadas y rodeos. Afecta a payaso, muñeca, araña, esqueleto, hombre alto, zombi, espantapájaros, fantasma, monstruo y tentáculos.</p>
-    <label class="chk"><input type="checkbox" id="env"> Interacción con el entorno: esquivan obstáculos, reaccionan al peligro y abren puertas</label>
+    <label class="chk"><input type="checkbox" id="env"> Interacción con el entorno: esquivan obstáculos, reaccionan al peligro y abren puertas (persona y doctor de la peste: además rodean muros, miran lo que les rodea y reaccionan a cuerpos y restos)</label>
     <p class="hint">Personas, robots, perros y criaturas rodean árboles, rocas, casas, tumbas y camas. Si una criatura o algo siniestro (charco de sangre, pentagrama, ataúd) aparece cerca, se frenan, lo miran, se encogen y retroceden. Las puertas se abren solas cuando alguien se acerca.</p>
     <label class="chk"><input type="checkbox" id="atk"> Ataques y combate: las criaturas atacan, los personajes esquivan o caen</label>
     <p class="hint">Cuando una criatura está cerca de un personaje prepara el golpe (se encoge y levanta los brazos), se lanza y ataca: zarpazo, embestida, salto de la araña o ataque en picada del fantasma. A veces el personaje esquiva de un salto lateral; si no, recibe el golpe, sale despedido hacia atrás y la cámara tiembla. Las criaturas corren inclinadas al perseguir.</p>
+    <label for="aware">Conciencia del actor</label>
+    <select id="aware"><option value="normal">Normal</option><option value="strong">Intensa</option><option value="off">Apagada</option></select>
+    <p class="hint">Necesita «Interacción con el entorno». La persona (y el héroe) reacciona a lo que le rodea: a oscuras camina encogido y apoya la mano en paredes y obstáculos; con lluvia se cubre la cabeza; con nieve o niebla se abraza y tiembla; ante algo macabro y alto (horca, guillotina, colgados, muros de ojos) se tapa la boca; y con el susto o el apagón se echa atrás con los brazos al frente. «Intensa» lo exagera.</p>
     <p class="hint">Los personajes respiran y miran a los lados; los monstruos, payasos y zombis se crispan; árboles y flores se mecen; los fantasmas giran al flotar; las luces titilan como llamas y, en escenas de terror, giran murciélagos sobre la escena. En el clima prueba «Polvo flotando» o «Brasas».</p>
   </div>
   <div data-p="llm">
@@ -586,6 +620,33 @@
     <label for="gy">51 · Restos y vísceras</label>
     <select id="gy"><option value="off">Sin restos</option><option value="some">Huesos y trozos esparcidos</option><option value="all">Restos por todas partes: el suelo está cubierto</option></select>
     <p class="hint">Se aplica a cualquier película, con o sin IA. Deja esqueletos tumbados y trozos de carne oscura sobre el suelo de cada escena. Combínala con el punto 50 para el máximo gore.</p>
+  </div>
+  <div data-p="render">
+    <h3>Más macabro</h3>
+    <label for="mac">52 · Instrumentos de muerte</label>
+    <select id="mac">
+      <option value="off">Ninguno</option>
+      <option value="some">Uno por escena (al azar)</option>
+      <option value="all">Tres por escena: patio de ejecuciones</option>
+    </select>
+    <p class="hint">Reparte por cada escena guillotina, horca, dama de hierro, mesa de operaciones, estacas con calaveras o pozo con manos. También están en «Forma» y en el catálogo de la IA. Se aplica con o sin IA. Es ficción con criaturas 3D, pensada para adultos.</p>
+    <label for="bmsg">53 · Mensaje escrito con sangre</label>
+    <select id="bmsg">
+      <option value="off">Sin mensaje</option>
+      <option value="huye">HUYE</option>
+      <option value="atras">NO MIRES ATRÁS</option>
+      <option value="aqui">ESTÁ AQUÍ</option>
+      <option value="ayuda">AYÚDAME</option>
+      <option value="tarde">YA ES TARDE</option>
+    </select>
+    <p class="hint">A mitad de la película (al 55 %) aparece en pantalla, parpadea y gotea durante unos 2,6 s.</p>
+    <label for="chainsnd">54 · Sonidos macabros</label>
+    <label class="chk"><input type="checkbox" id="chainsnd"> Cadenas que se arrastran a lo lejos</label>
+    <label class="chk"><input type="checkbox" id="laugh"> Risa de niño lejana, con eco</label>
+    <label class="chk"><input type="checkbox" id="drip"> Goteo constante con eco</label>
+    <label for="lids">55 · Párpados pesados</label>
+    <label class="chk"><input type="checkbox" id="lids"> La visión se cierra a ratos y, al final, del todo</label>
+    <p class="hint">Dos párpados negros bajan y suben cada vez más seguido. Si congelas el final, no se cierran del todo.</p>
   </div>
 </aside>
 
