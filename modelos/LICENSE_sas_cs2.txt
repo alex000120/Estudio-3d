@@ -1,9 +1,0 @@
-Modelo: SAS | CS2 Agent Model Red
-Autor: 6lucius (https://sketchfab.com/6lucius)
-Fuente: https://sketchfab.com/3d-models/sas-cs2-agent-model-red-8334fb41c59249958df92fb8a0a44528
-Licencia del autor: CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
-Atribución requerida: "SAS | CS2 Agent Model Red" por 6lucius, CC-BY-4.0.
-
-AVISO: el personaje es un agente de Counter-Strike 2 (Valve). La licencia del autor
-no cubre necesariamente los derechos de Valve sobre el personaje. Revisar antes de
-usarlo en una obra publicada o comercial.
