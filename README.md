@@ -1,4 +1,17 @@
-# Estudio-3d
+# Estudio 3D general
+
+## Versión 11: cualquier película, sin primera persona
+
+El estudio ya no está enfocado en el terror. Sirve para cualquier película o corto: comedia, acción, romance, ciencia ficción, cuento infantil, documental, drama.
+
+- **«Generar video» configura todo solo.** Con IA, la IA elige género, luz, color, hora del día, música, cámara, subtítulos y duración según la idea. Sin IA (motor local), el texto decide el género y el ambiente.
+- **Sin primera persona.** Se quitaron la cámara en primera persona, el modo «Caminar yo», la escuela explorable y sus efectos (manos, sangre en la lente, pantalla que late, cordura, párpados).
+- **Sin herramientas de terror en la interfaz.** Se quitaron los presets, las recetas de terror de la IA, los instrumentos de muerte, el corto de las 3:33 y los cortos de muestra «La vigilia» y «La escuela».
+- **Nuevos géneros:** acción, romance y documental (se suman a aventura, ciencia ficción, comedia, cuento infantil y drama).
+
+Las secciones de abajo describen funciones de la versión anterior. Varias ya no aparecen en la app; se conservan como historial.
+La biblioteca de personajes, objetos y sonidos sigue siendo la misma. La IA puede usar las piezas macabras si la idea las pide.
+
 ## Sonidos
 
 La carpeta `sonidos/` contiene 12 efectos WAV que la IA puede usar en cada plano (campo `sfx` en `shots`). El catálogo (id, descripción y cuándo usarlo) está en `js/app.js`, en la sección «Biblioteca de sonidos».
